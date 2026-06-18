@@ -87,12 +87,24 @@ def inicializar_banco(on_status=None):
         conn.close()
 
 
+# Melhoria feita por Dener em 17/06/2026
+# Antes, se eu tentasse cadastrar um cliente com um CPF/CNPJ que ja existe (essa coluna e UNIQUE),
+# o programa quebrava e fechava na cara do usuario.
+# Coloquei um try/except para "segurar" esse erro: se o CPF/CNPJ ja existir, a funcao devolve False
+# em vez de quebrar; se der tudo certo, devolve True. Assim a tela consegue avisar o usuario.
+# O "finally" garante que a conexao com o banco sempre seja fechada, dando certo ou errado.
 def cadastrar_cliente(tipo, nome, telefone, email, cpf_cnpj):
     conn = conexao()
     cursor = conn.cursor()
-    cursor.execute("INSERT INTO cliente (tipo, nome, telefone, email, cpf_cnpj) VALUES (?, ?, ?, ?, ?)", (tipo, nome, telefone, email, cpf_cnpj))
-    conn.commit()
-    conn.close()
+    try:
+        cursor.execute("INSERT INTO cliente (tipo, nome, telefone, email, cpf_cnpj) VALUES (?, ?, ?, ?, ?)", (tipo, nome, telefone, email, cpf_cnpj))
+        conn.commit()
+        return True
+    except sqlite3.IntegrityError:
+        conn.rollback()
+        return False
+    finally:
+        conn.close()
 
 def listar_clientes():
     conn = conexao()
@@ -116,12 +128,22 @@ def atualizar_cliente(id_cliente, tipo, nome, telefone, email, cpf_cnpj):
     conn.commit()
     conn.close()  
 
+# Melhoria feita por Dener em 17/06/2026
+# O nome do equipamento e UNIQUE no banco, ou seja, nao pode repetir.
+# Antes, tentar cadastrar um equipamento com nome repetido quebrava o programa.
+# Agora o try/except devolve False se ja existir e True se cadastrar certinho.
 def cadastrar_equipamento(nome):
     conn = conexao()
     cursor = conn.cursor()
-    cursor.execute("INSERT INTO equipamento (nome) VALUES (?)", (nome,))
-    conn.commit()
-    conn.close()
+    try:
+        cursor.execute("INSERT INTO equipamento (nome) VALUES (?)", (nome,))
+        conn.commit()
+        return True
+    except sqlite3.IntegrityError:
+        conn.rollback()
+        return False
+    finally:
+        conn.close()
 
 def listar_equipamentos():
     conn = conexao()
@@ -174,18 +196,30 @@ def atualizar_sala(id_sala, nome, numero, andar, capacidade, observacoes, status
     conn.commit()
     conn.close()  
 
-def cadastrar_reserva(id_sala, id_cliente, data, hora_inicio, hora_fim, status, criado_em):
+# Melhoria feita por Dener em 17/06/2026
+# Antes eu pedia "criado_em" como parametro e mandava na mao para o banco.
+# Mas a coluna "criado_em" ja tem um DEFAULT (datetime('now','localtime')) la na criacao da tabela,
+# entao o proprio banco preenche a data/hora sozinho.
+# Tirei "criado_em" daqui para nao repetir e para nao correr o risco de gravar uma data errada.
+def cadastrar_reserva(id_sala, id_cliente, data, hora_inicio, hora_fim, status):
     conn = conexao()
     cursor = conn.cursor()
-    cursor.execute("INSERT INTO reserva (id_sala, id_cliente, data, hora_inicio, hora_fim, status, criado_em) VALUES (?, ?, ?, ?, ?, ?, ?)", (id_sala, id_cliente, data, hora_inicio, hora_fim, status, criado_em))
+    cursor.execute("INSERT INTO reserva (id_sala, id_cliente, data, hora_inicio, hora_fim, status) VALUES (?, ?, ?, ?, ?, ?)", (id_sala, id_cliente, data, hora_inicio, hora_fim, status))
     conn.commit()
     conn.close()
 
+# Melhoria feita por Dener em 17/06/2026
+# Aqui eu arrumei o JOIN: antes ele ligava "reserva.id = sala.id" e "reserva.id = cliente.id",
+# o que estava errado, porque o id da reserva nao tem relacao com o id da sala/cliente.
+# O certo e ligar pelas chaves estrangeiras: reserva.id_sala -> sala.id e reserva.id_cliente -> cliente.id.
+# Tambem coloquei "reserva.id" como primeira coluna do SELECT, para depois eu saber qual
+# reserva editar ou cancelar na tela.
 def db_listar_reservas():
     conn = conexao()
     cursor = conn.cursor()
     cursor.execute("""
-                   SELECT sala.nome,
+                   SELECT reserva.id,
+                          sala.nome,
                           cliente.nome,
                           reserva.data,
                           reserva.hora_inicio,
@@ -193,8 +227,8 @@ def db_listar_reservas():
                           reserva.status,
                           reserva.criado_em
                    FROM reserva
-                   INNER JOIN sala ON reserva.id = sala.id
-                   INNER JOIN cliente ON reserva.id = cliente.id
+                   INNER JOIN sala    ON  reserva.id_sala = sala.id
+                   INNER JOIN cliente ON  reserva.id_cliente = cliente.id
                   """)
     dados = cursor.fetchall()
     conn.close()
@@ -207,19 +241,33 @@ def db_deletar_reserva(id_reserva):
     conn.commit()
     conn.close()
 
-def db_atualizar_reserva(id_reserva, id_sala, id_cliente, data, hora_inicio, hora_fim, status, criado_em):
+# Melhoria feita por Dener em 17/06/2026
+# "criado_em" e a data em que a reserva foi CRIADA. Quando a gente edita uma reserva,
+# essa data nao pode mudar (senao a gente perde o registro de quando ela nasceu).
+# Por isso tirei "criado_em" do UPDATE: agora a edicao mexe so nos outros campos.
+def db_atualizar_reserva(id_reserva, id_sala, id_cliente, data, hora_inicio, hora_fim, status):
     conn = conexao()
     cursor = conn.cursor()
-    cursor.execute("UPDATE reserva SET id_sala = ?, id_cliente = ?, data = ?, hora_inicio = ?, hora_fim = ?, status = ?, criado_em = ? WHERE id = ?", (id_sala, id_cliente, data, hora_inicio, hora_fim, status, criado_em, id_reserva))
+    cursor.execute("UPDATE reserva SET id_sala = ?, id_cliente = ?, data = ?, hora_inicio = ?, hora_fim = ?, status = ? WHERE id = ?", (id_sala, id_cliente, data, hora_inicio, hora_fim, status, id_reserva))
     conn.commit()
     conn.close()
 
+# Melhoria feita por Dener em 17/06/2026
+# A tabela sala_equipamento tem chave primaria (id_sala, id_equipamento), ou seja, o mesmo
+# equipamento nao pode ser ligado duas vezes na mesma sala. Antes, tentar repetir quebrava o programa.
+# Coloquei try/except: se a ligacao ja existir, devolve False; se criar certo, devolve True.
 def cadastrar_sala_equipamento(id_sala, id_equipamento):
     conn = conexao()
     cursor = conn.cursor()
-    cursor.execute("INSERT INTO sala_equipamento (id_sala, id_equipamento) VALUES (?, ?)", (id_sala, id_equipamento))
-    conn.commit()
-    conn.close()
+    try:
+        cursor.execute("INSERT INTO sala_equipamento (id_sala, id_equipamento) VALUES (?, ?)", (id_sala, id_equipamento))
+        conn.commit()
+        return True
+    except sqlite3.IntegrityError:
+        conn.rollback()
+        return False
+    finally:
+        conn.close()
 
 def db_listar_sala_equipamento():
     conn = conexao()
