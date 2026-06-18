@@ -1,0 +1,29 @@
+# ============================================================
+# .gitignore - lista do que o Git deve IGNORAR
+# Criado por Dener em 17/06/2026
+# ------------------------------------------------------------
+# Tudo que estiver listado aqui o Git "finge que nao ve":
+# nao aparece nos commits e nao vai para o repositorio.
+# Isso serve para nao subir rascunhos do Python e arquivos
+# que cada computador cria sozinho.
+# ============================================================
+
+# --- Rascunhos que o Python cria sozinho (cache/bytecode) ---
+__pycache__/
+*.pyc
+*.pyo
+
+# --- Banco de dados local (tem dados de teste, nao precisa subir) ---
+salas_reunioes.db
+
+# --- Backups do banco que o programa gerar ---
+*.db-journal
+backup/
+
+# --- Ambiente virtual (se um dia voce criar um "venv") ---
+.venv/
+venv/
+
+# --- Arquivos de configuracao de editores ---
+.vscode/
+.idea/
