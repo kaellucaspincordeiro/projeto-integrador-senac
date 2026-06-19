@@ -44,7 +44,12 @@ def montar_cadastro_equipamento(container, navegar):
         else:
             messagebox.showerror("Erro", "Ja existe um equipamento cadastrado.")
 
+    #Esperando o command para editar e excluir o registro do equipamento
     tk.Button(frame_cadastro_equipamento, text="Salvar", command=salvar_equipamento, bg="#1f4fc4", fg="white").grid(row=6, column=0, pady=(0, 15))
+    tk.Button(frame_cadastro_equipamento, text="Editar", bg="#1f4fc4", fg="white").grid(row=7, column=0, pady=(0, 15))
+    tk.Button(frame_cadastro_equipamento, text="Excluir", bg="#d32d2d", fg="black").grid(row=8, column=0, pady=(0, 15))
+
+
 
 
 
