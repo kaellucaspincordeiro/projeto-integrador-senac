@@ -10,6 +10,7 @@
 # Ideia importante: existe UMA janela so. Dentro dela tem uma caixa
 # chamada "container". Cada tela e desenhada DENTRO dessa caixa.
 # Quando trocamos de tela, a gente limpa a caixa e desenha a nova.
+# Kael: Adicionando a tela do cadastro de equipamento 
 # ============================================================
 
 import tkinter as tk
@@ -26,6 +27,7 @@ from historico import montar_historico
 from backup import montar_backup
 # A tela de cadastro de sala fica dentro da pasta "sala".
 from sala.cadastrar_sala import montar_cadastrar_sala
+from equipamento.cadastro_equipamento import montar_cadastro_equipamento
 
 
 # Cria o banco e as tabelas caso seja a primeira vez que o programa roda.
@@ -61,6 +63,8 @@ def navegar(nome_tela):
         montar_cadastro_cliente(container, navegar)
     elif nome_tela == "busca":
         montar_busca_salas(container, navegar)
+    elif nome_tela == "cadastro_equipamento":
+        montar_cadastro_equipamento(container, navegar)
     elif nome_tela == "agendamento":
         montar_agendamento(container, navegar)
     elif nome_tela == "historico":
