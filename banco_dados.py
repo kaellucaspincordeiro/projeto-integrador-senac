@@ -1,5 +1,8 @@
 import sqlite3
 
+#Melhoria Feita por Kael:
+#Adicionando o atributo quantidade_disponivel na tabela equipamento,
+#correção na inserção e atualização do equipamento.
 def conexao():
     conn = sqlite3.connect("salas_reunioes.db", timeout=10)
     conn.execute("""PRAGMA foreign_keys = ON;""")
@@ -22,7 +25,8 @@ def inicializar_banco(on_status=None):
         cursor.execute("""
                     CREATE TABLE IF NOT EXISTS equipamento (
                             id INTEGER PRIMARY KEY AUTOINCREMENT, 
-                            nome TEXT NOT NULL UNIQUE)
+                            nome TEXT NOT NULL UNIQUE,
+                            quantidade_disponivel INTEGER NOT NULL)
                     """)
         cursor.execute("""
                     CREATE TABLE IF NOT EXISTS sala (
@@ -132,11 +136,11 @@ def atualizar_cliente(id_cliente, tipo, nome, telefone, email, cpf_cnpj):
 # O nome do equipamento e UNIQUE no banco, ou seja, nao pode repetir.
 # Antes, tentar cadastrar um equipamento com nome repetido quebrava o programa.
 # Agora o try/except devolve False se ja existir e True se cadastrar certinho.
-def cadastrar_equipamento(nome):
+def cadastrar_equipamento(nome, quantidade):
     conn = conexao()
     cursor = conn.cursor()
     try:
-        cursor.execute("INSERT INTO equipamento (nome) VALUES (?)", (nome,))
+        cursor.execute("INSERT INTO equipamento (nome, quantidade_disponivel) VALUES (?, ?)", (nome, quantidade))
         conn.commit()
         return True
     except sqlite3.IntegrityError:
@@ -160,10 +164,10 @@ def deletar_equipamento(id_equipamento):
     conn.commit()
     conn.close()
 
-def atualizar_equipamento(id_equipamento, nome):
+def atualizar_equipamento(id_equipamento, nome, quantidade):
     conn = conexao()
     cursor = conn.cursor()
-    cursor.execute("UPDATE equipamento SET nome = ? WHERE id = ?", (nome, id_equipamento))
+    cursor.execute("UPDATE equipamento SET nome = ? , quantidade_disponivel = ? WHERE id = ?", (nome, quantidade, id_equipamento))
     conn.commit()
     conn.close()  
 
