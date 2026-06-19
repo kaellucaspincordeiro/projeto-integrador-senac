@@ -47,8 +47,13 @@ def montar_login(container, navegar):
 
         # POR ENQUANTO so checamos se os campos estao preenchidos.
         # MAIS PARA FRENTE: aqui vamos conferir o e-mail e a senha no banco de dados.
+        # Aprimoramento por Kael: Quando ocorre um erro no login, os dois campos apagam automaticamente
+        # e foca primeiro no email para digitar
         if email == "" or senha == "":
             messagebox.showwarning("Atencao", "Preencha o e-mail e a senha.")
+            entrada_email.delete(0, tk.END)
+            entrada_senha.delete(0, tk.END)
+            entrada_email.focus()
             return
 
         navegar("dashboard")  # deu certo -> vai para a tela inicial
