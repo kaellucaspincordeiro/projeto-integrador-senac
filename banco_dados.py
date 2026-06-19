@@ -36,7 +36,7 @@ def inicializar_banco(on_status=None):
                             andar INTEGER NOT NULL CHECK (andar BETWEEN 1 AND 15),
                             capacidade INTEGER NOT NULL CHECK (capacidade > 0),
                             observacoes TEXT,
-                            status TEXT NOT NULL DEFAULT 'ativa' CHECK (status IN ('ativa', 'manutencao'))
+                            status TEXT NOT NULL DEFAULT 'disponivel' CHECK (status IN ('disponivel', 'indisponivel', 'manutencao'))
                             )
                     """)
         cursor.execute("""
