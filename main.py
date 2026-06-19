@@ -20,7 +20,7 @@ import banco_dados as bd
 from login import montar_login
 from recuperar_senha import montar_recuperar_senha
 from dashboard import montar_dashboard
-from cadastro_cliente import montar_cadastro_cliente
+from cliente.cadastro_cliente import montar_cadastro_cliente
 from busca_salas import montar_busca_salas
 from agendamento import montar_agendamento
 from historico import montar_historico
