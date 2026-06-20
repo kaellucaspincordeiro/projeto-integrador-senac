@@ -288,7 +288,21 @@ def db_listar_sala_equipamento():
     return dados
 
 #Manipulação para o sistema do projeto
+#Kael: Adicionando a manipulação para atualizar o status da sala na hora de reservar 
+#e recuperação da nova senha
+def atualizar_status_sala(id_sala, status):
+    conn = conexao()
+    cursor = conn.cursor()
+    cursor.execute("UPDATE sala SET status = ? WHERE id = ?", (status, id_sala))
+    conn.commit()
+    conn.close()  
 
+def recuperar_senha(id_senha, senha_hash):
+    conn = conexao()
+    cursor = conn.cursor()
+    cursor.execute("UPDATE administrador SET senha_hash = ? WHERE id = ?", (senha_hash, id_senha))
+    conn.commit()
+    conn.close()  
 
 
 
