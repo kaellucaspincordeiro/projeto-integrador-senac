@@ -2,7 +2,12 @@
 # TELA DE AGENDAMENTO  (redesign profissional - 23/06/2026)
 # ------------------------------------------------------------
 # Cartao central com os campos da reserva (sala, cliente, data,
-# horarios). As regras de negocio ficam para a proxima etapa.
+# horarios).
+#
+# As REGRAS (nao deixar horario repetido, reserva de 30min a 4h,
+# so de segunda a sexta das 08h as 18h, sem data no passado) e o
+# salvar no banco ficam para a proxima etapa (logica do Kael a ser
+# reimplementada neste novo layout).
 # ============================================================
 
 import tkinter as tk

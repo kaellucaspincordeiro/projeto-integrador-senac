@@ -2,11 +2,66 @@
 # TELA DE BACKUP / CONFIGURACOES  (redesign profissional - 23/06/2026)
 # ------------------------------------------------------------
 # Cartao central com as duas acoes principais (exportar/importar).
+#
+# Backup = uma copia de seguranca do banco de dados.
+# Exportar = salva uma copia atual do banco em outro local.
+# Importar = substitui o banco atual por uma copia escolhida.
 # ============================================================
 
 import tkinter as tk
-from tkinter import messagebox
+from tkinter import messagebox, filedialog  # dialogo para escolher o local do backup
+import shutil  # faz a copia do banco de dados para outro local
 import ui
+
+
+# ------------------------------------------------------------
+# Exporta uma copia do banco para o local escolhido.
+# ------------------------------------------------------------
+def exportar_backup():
+    try:
+        destino = filedialog.asksaveasfilename(
+            title="Salvar backup",
+            defaultextension=".db",
+            filetypes=[("Banco de Dados", "*.db")]
+        )
+
+        if destino:
+            shutil.copy2("salas_reunioes.db", destino)
+            messagebox.showinfo("Sucesso", "Backup exportado com sucesso.")
+
+    except Exception as erro:
+        messagebox.showerror(
+            "Erro",
+            f"Não foi possivel exportar o backup.\n\n{erro}"
+        )
+
+
+# ------------------------------------------------------------
+# Importa uma copia de outro computador.
+# O banco atual sera substituido.
+# ------------------------------------------------------------
+def importar_backup():
+    try:
+        origem = filedialog.askopenfilename(
+            title="Selecionar backup",
+            filetypes=[("Banco de Dados", "*.db")]
+        )
+
+        if origem:
+            resposta = messagebox.askyesno(
+                "Confirmação",
+                "O banco atual será substituído.\n\nDeseja continuar?"
+            )
+
+            if resposta:
+                shutil.copy2(origem, "salas_reunioes.db")
+                messagebox.showinfo("Sucesso", "Banco importado com sucesso.")
+
+    except Exception as erro:
+        messagebox.showerror(
+            "Erro",
+            f"Não foi possivel importar o backup.\n\n{erro}"
+        )
 
 
 def montar_backup(container, navegar):
@@ -28,8 +83,8 @@ def montar_backup(container, navegar):
            fonte=ui.F_PEQ, fg=ui.COR_TEXTO_FRACO).pack(pady=(0, 18))
 
     ui.botao(interno, "Exportar copia do banco",
-             lambda: messagebox.showinfo("A fazer", "Exportar sera feito depois."),
+             exportar_backup,
              icone_nome="backup").pack(fill="x", pady=6)
     ui.botao(interno, "Importar banco de outro PC",
-             lambda: messagebox.showinfo("A fazer", "Importar sera feito depois."),
+             importar_backup,
              variante="neutro", icone_nome="config").pack(fill="x", pady=6)
