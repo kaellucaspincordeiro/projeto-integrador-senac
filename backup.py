@@ -66,7 +66,7 @@ def importar_backup():
 
 def montar_backup(container, navegar):
     ui.limpar(container)
-    ui.barra_topo(container, "Backup e Configuracoes",
+    ui.barra_topo(container, "Backup e Configurações",
                   lambda: navegar("dashboard"))
 
     cartao = ui.card(container)
@@ -78,11 +78,11 @@ def montar_backup(container, navegar):
     li = tk.Label(interno, image=lg, bg=ui.COR_CARD)
     li.image = lg
     li.pack()
-    ui.lbl(interno, "Copia de seguranca", fonte=ui.F_H2).pack(pady=(8, 2))
+    ui.lbl(interno, "Cópia de segurança", fonte=ui.F_H2).pack(pady=(8, 2))
     ui.lbl(interno, "Salve ou restaure o banco de dados do sistema.",
            fonte=ui.F_PEQ, fg=ui.COR_TEXTO_FRACO).pack(pady=(0, 18))
 
-    ui.botao(interno, "Exportar copia do banco",
+    ui.botao(interno, "Exportar cópia do banco",
              exportar_backup,
              icone_nome="backup").pack(fill="x", pady=6)
     ui.botao(interno, "Importar banco de outro PC",
