@@ -1,46 +1,40 @@
 # ============================================================
-# TELA DE RECUPERAR SENHA
-# Tela criada por Dener em 17/06/2026
+# TELA DE RECUPERAR SENHA  (redesign profissional - 23/06/2026)
 # ------------------------------------------------------------
-# Serve para quando o administrador esquece a senha.
-# A ideia: ele responde uma pergunta pessoal (que cadastrou antes)
-# e, se acertar, pode criar uma senha nova.
+# Cartao centralizado com a pergunta de seguranca e a nova senha.
 # ============================================================
 
 import tkinter as tk
 from tkinter import messagebox
+import ui
 
 
 def montar_recuperar_senha(container, navegar):
-    # limpa a tela anterior
-    for widget in container.winfo_children():
-        widget.destroy()
+    ui.limpar(container)
 
-    quadro = tk.Frame(container)
-    quadro.place(relx=0.5, rely=0.5, anchor="center")
+    cartao = ui.card(container)
+    cartao.place(relx=0.5, rely=0.5, anchor="center")
+    interno = tk.Frame(cartao, bg=ui.COR_CARD)
+    interno.pack(padx=48, pady=42)
 
-    tk.Label(quadro, text="Recuperar Senha", font=("Arial", 20, "bold")).pack(pady=(0, 20))
+    lg = ui.icone("senha", 44, ui.COR_PRIMARIA)
+    cab = tk.Label(interno, image=lg, bg=ui.COR_CARD)
+    cab.image = lg
+    cab.pack()
+    ui.lbl(interno, "Recuperar Senha", fonte=ui.F_H1).pack(pady=(10, 2))
+    ui.lbl(interno, "Responda a pergunta de seguranca para criar uma nova senha.",
+           fonte=ui.F_PEQ, fg=ui.COR_TEXTO_FRACO).pack(pady=(0, 12))
 
-    # A pergunta de seguranca vem do cadastro do administrador.
-    # POR ENQUANTO deixei um texto de exemplo. MAIS PARA FRENTE vamos
-    # buscar a pergunta certa no banco de dados.
-    tk.Label(quadro, text="Pergunta: Nome do seu primeiro animal?",
-             font=("Arial", 11)).pack(anchor="w", pady=(0, 5))
-    entrada_resposta = tk.Entry(quadro, width=35)
-    entrada_resposta.pack(pady=(0, 15))
-
-    tk.Label(quadro, text="Nova senha:", font=("Arial", 11)).pack(anchor="w")
-    entrada_nova_senha = tk.Entry(quadro, width=35, show="*")
-    entrada_nova_senha.pack(pady=(0, 15))
+    ui.lbl(interno, "Pergunta: Nome do seu primeiro animal?",
+           fonte=ui.F_LABEL, fg=ui.COR_TEXTO_FRACO).pack(anchor="w", pady=(6, 0))
+    entrada_resposta = ui.campo(interno, "RESPOSTA")
+    entrada_nova_senha = ui.campo(interno, "NOVA SENHA", show="*")
 
     def salvar_nova_senha():
-        # MAIS PARA FRENTE: aqui vamos conferir a resposta no banco
-        # e, se estiver certa, salvar a nova senha do administrador.
         messagebox.showinfo("Tudo certo", "Aqui vamos salvar a nova senha (a fazer).")
         navegar("login")
 
-    tk.Button(quadro, text="Salvar nova senha", width=20, bg="#1f4fc4", fg="white",
-              command=salvar_nova_senha).pack(pady=(0, 10))
-
-    tk.Button(quadro, text="< Voltar para o login", borderwidth=0, fg="#1f4fc4",
-              command=lambda: navegar("login")).pack()
+    ui.botao(interno, "Salvar nova senha", salvar_nova_senha,
+             icone_nome="disponivel").pack(fill="x", pady=(22, 10))
+    ui.botao_link(interno, "< Voltar para o login",
+                  lambda: navegar("login")).pack()

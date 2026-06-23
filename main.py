@@ -15,6 +15,7 @@
 
 import tkinter as tk
 import banco_dados as bd
+import ui   # sistema de design (cores, fontes, icones, pecas prontas)
 
 # Aqui trazemos a funcao que desenha cada tela. Cada tela mora no seu arquivo.
 from login import montar_login
@@ -36,10 +37,16 @@ bd.inicializar_banco()
 # ---- Janela principal ----
 janela = tk.Tk()
 janela.title("ShareSpace - Gestao de Salas de Reuniao")
-janela.geometry("800x600")   # tamanho da janela (largura x altura)
+
+# Aplica o tema profissional (cores, fontes, estilo das tabelas).
+ui.aplicar_tema(janela)
+
+janela.geometry("1100x700")   # tamanho de RESTAURACAO (ao sair do maximizado)
+janela.minsize(900, 600)      # nao deixa encolher demais e quebrar o layout
+janela.state("zoomed")        # abre MAXIMIZADO, encaixado na tela do usuario
 
 # A "caixa" onde todas as telas vao aparecer.
-container = tk.Frame(janela)
+container = tk.Frame(janela, bg=ui.COR_FUNDO)
 container.pack(fill="both", expand=True)
 
 

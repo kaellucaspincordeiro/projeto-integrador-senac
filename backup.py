@@ -1,36 +1,35 @@
 # ============================================================
-# TELA DE BACKUP / CONFIGURACOES
-# Tela criada por Dener em 17/06/2026
+# TELA DE BACKUP / CONFIGURACOES  (redesign profissional - 23/06/2026)
 # ------------------------------------------------------------
-# Backup = uma copia de seguranca do banco de dados.
-# Aqui o administrador podera salvar uma copia e tambem trazer
-# uma copia de outro computador.
-#
-# POR ENQUANTO os botoes so mostram um aviso. A parte de copiar
-# o arquivo do banco vamos programar depois.
+# Cartao central com as duas acoes principais (exportar/importar).
 # ============================================================
 
 import tkinter as tk
 from tkinter import messagebox
+import ui
 
 
 def montar_backup(container, navegar):
-    # limpa a tela anterior
-    for widget in container.winfo_children():
-        widget.destroy()
+    ui.limpar(container)
+    ui.barra_topo(container, "Backup e Configuracoes",
+                  lambda: navegar("dashboard"))
 
-    tk.Button(container, text="< Voltar", bg="#1f4fc4", fg="white",
-              command=lambda: navegar("dashboard")).pack(anchor="w", padx=10, pady=10)
+    cartao = ui.card(container)
+    cartao.place(relx=0.5, rely=0.5, anchor="center")
+    interno = tk.Frame(cartao, bg=ui.COR_CARD)
+    interno.pack(padx=44, pady=36)
 
-    quadro = tk.Frame(container)
-    quadro.place(relx=0.5, rely=0.4, anchor="center")
+    lg = ui.icone("backup", 44, ui.COR_PRIMARIA)
+    li = tk.Label(interno, image=lg, bg=ui.COR_CARD)
+    li.image = lg
+    li.pack()
+    ui.lbl(interno, "Copia de seguranca", fonte=ui.F_H2).pack(pady=(8, 2))
+    ui.lbl(interno, "Salve ou restaure o banco de dados do sistema.",
+           fonte=ui.F_PEQ, fg=ui.COR_TEXTO_FRACO).pack(pady=(0, 18))
 
-    tk.Label(quadro, text="Backup e Configuracoes", font=("Arial", 18, "bold")).pack(pady=(0, 20))
-
-    # MAIS PARA FRENTE: este botao vai copiar o arquivo do banco para uma pasta de backup.
-    tk.Button(quadro, text="Exportar copia do banco", width=30, height=2, bg="#1f4fc4", fg="white",
-              command=lambda: messagebox.showinfo("A fazer", "Exportar sera feito depois.")).pack(pady=8)
-
-    # MAIS PARA FRENTE: este botao vai trazer um banco de outro computador.
-    tk.Button(quadro, text="Importar banco de outro PC", width=30, height=2, bg="#1f4fc4", fg="white",
-              command=lambda: messagebox.showinfo("A fazer", "Importar sera feito depois.")).pack(pady=8)
+    ui.botao(interno, "Exportar copia do banco",
+             lambda: messagebox.showinfo("A fazer", "Exportar sera feito depois."),
+             icone_nome="backup").pack(fill="x", pady=6)
+    ui.botao(interno, "Importar banco de outro PC",
+             lambda: messagebox.showinfo("A fazer", "Importar sera feito depois."),
+             variante="neutro", icone_nome="config").pack(fill="x", pady=6)

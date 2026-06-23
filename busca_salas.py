@@ -1,67 +1,67 @@
 # ============================================================
-# TELA DE BUSCA DE SALAS
-# Tela criada por Dener em 17/06/2026
+# TELA DE BUSCA DE SALAS  (redesign profissional - 23/06/2026)
 # ------------------------------------------------------------
-# Aqui o administrador escolhe a data e o horario e o sistema
-# mostra quais salas estao livres. Tambem da para filtrar por
-# capacidade e por equipamento.
-#
-# A ordem que os requisitos pedem e:
-#   1) disponiveis primeiro
-#   2) depois as indisponiveis
-#   3) por ultimo as que estao em manutencao
-#
-# POR ENQUANTO os resultados sao de exemplo (escritos na mao).
-# MAIS PARA FRENTE eles virao do banco de dados.
+# Card de filtros no topo + lista de resultados com etiquetas
+# coloridas (verde = disponivel, laranja = ocupada, vermelho =
+# manutencao).
 # ============================================================
 
 import tkinter as tk
+from tkinter import ttk
+import ui
 
 
 def montar_busca_salas(container, navegar):
-    # limpa a tela anterior
-    for widget in container.winfo_children():
-        widget.destroy()
+    ui.limpar(container)
+    corpo = ui.barra_topo(container, "Busca de Salas", lambda: navegar("dashboard"))
 
-    tk.Button(container, text="< Voltar", bg="#1f4fc4", fg="white",
-              command=lambda: navegar("dashboard")).pack(anchor="w", padx=10, pady=10)
+    # ---- Card de filtros ----
+    filtros = ui.card(corpo)
+    filtros.pack(fill="x")
+    fi = tk.Frame(filtros, bg=ui.COR_CARD)
+    fi.pack(fill="x", padx=18, pady=16)
 
-    tk.Label(container, text="Busca de Salas", font=("Arial", 18, "bold")).pack(pady=(0, 10))
+    def campo_inline(rotulo, largura):
+        f = tk.Frame(fi, bg=ui.COR_CARD)
+        ui.lbl(f, rotulo, fonte=ui.F_LABEL, fg=ui.COR_TEXTO_FRACO).pack(anchor="w")
+        e = ttk.Entry(f, width=largura, font=ui.F_TEXTO)
+        e.pack(ipady=3)
+        return f, e
 
-    # ---- Filtros (data, horario) ----
-    filtros = tk.Frame(container)
-    filtros.pack(pady=10)
+    f1, _ = campo_inline("DATA (AAAA-MM-DD)", 14)
+    f1.pack(side="left", padx=(0, 14))
+    f2, _ = campo_inline("INICIO", 8)
+    f2.pack(side="left", padx=(0, 14))
+    f3, _ = campo_inline("FIM", 8)
+    f3.pack(side="left", padx=(0, 14))
+    ui.botao(fi, "BUSCAR", lambda: None, icone_nome="busca").pack(side="left",
+                                                                  anchor="s", pady=(0, 1))
 
-    tk.Label(filtros, text="Data:").grid(row=0, column=0, padx=5)
-    tk.Entry(filtros, width=12).grid(row=0, column=1, padx=5)   # exemplo: 2026-06-20
+    # ---- Resultados ----
+    res = tk.Frame(corpo, bg=ui.COR_FUNDO)
+    res.pack(fill="both", expand=True, pady=(18, 0))
 
-    tk.Label(filtros, text="Inicio:").grid(row=0, column=2, padx=5)
-    tk.Entry(filtros, width=8).grid(row=0, column=3, padx=5)    # exemplo: 09:00
+    def titulo_grupo(texto, cor):
+        cab = tk.Frame(res, bg=ui.COR_FUNDO)
+        cab.pack(fill="x", pady=(12, 4))
+        tk.Frame(cab, bg=cor, width=12, height=12).pack(side="left", pady=4)
+        ui.lbl(cab, texto, fonte=ui.F_LABEL, fg=cor, bg=ui.COR_FUNDO).pack(side="left", padx=8)
 
-    tk.Label(filtros, text="Fim:").grid(row=0, column=4, padx=5)
-    tk.Entry(filtros, width=8).grid(row=0, column=5, padx=5)    # exemplo: 10:30
+    def linha_sala(texto, com_botao=False):
+        c = ui.card(res)
+        c.pack(fill="x", pady=4)
+        dentro = tk.Frame(c, bg=ui.COR_CARD)
+        dentro.pack(fill="x", padx=16, pady=10)
+        ui.lbl(dentro, texto, fonte=ui.F_TEXTO).pack(side="left")
+        if com_botao:
+            ui.botao(dentro, "Reservar", lambda: navegar("agendamento"),
+                     icone_nome="agendamento").pack(side="right")
 
-    # MAIS PARA FRENTE: o botao BUSCAR vai procurar no banco as salas livres.
-    tk.Button(filtros, text="BUSCAR", bg="#1f4fc4", fg="white").grid(row=0, column=6, padx=10)
+    titulo_grupo("DISPONIVEIS", ui.COR_SUCESSO)
+    linha_sala("Sala Alfa  -  101, 1o andar, 8 lugares", com_botao=True)
 
-    # ---- Resultados (exemplo) ----
-    resultados = tk.Frame(container)
-    resultados.pack(pady=10, fill="x", padx=20)
+    titulo_grupo("INDISPONIVEIS", ui.COR_AVISO)
+    linha_sala("Sala Beta (502)  -  ocupada das 14h as 17h")
 
-    # Grupo: DISPONIVEIS (verde)
-    tk.Label(resultados, text="DISPONIVEIS", font=("Arial", 12, "bold"), fg="green").pack(anchor="w")
-    linha = tk.Frame(resultados)
-    linha.pack(fill="x", pady=2)
-    tk.Label(linha, text="Sala Alfa (101, 1o andar, 8 lugares)").pack(side="left")
-    # O botao Reservar leva para a tela de agendamento.
-    tk.Button(linha, text="Reservar", command=lambda: navegar("agendamento")).pack(side="right")
-
-    # Grupo: INDISPONIVEIS (laranja)
-    tk.Label(resultados, text="INDISPONIVEIS", font=("Arial", 12, "bold"),
-             fg="orange").pack(anchor="w", pady=(10, 0))
-    tk.Label(resultados, text="Sala Beta (502) - ocupada das 14h as 17h").pack(anchor="w")
-
-    # Grupo: EM MANUTENCAO (vermelho)
-    tk.Label(resultados, text="EM MANUTENCAO", font=("Arial", 12, "bold"),
-             fg="red").pack(anchor="w", pady=(10, 0))
-    tk.Label(resultados, text="Sala Gama (1503)").pack(anchor="w")
+    titulo_grupo("EM MANUTENCAO", ui.COR_PERIGO)
+    linha_sala("Sala Gama (1503)")

@@ -1,108 +1,79 @@
+# ============================================================
+# TELA DE CADASTRO DE EQUIPAMENTO  (redesign profissional - 23/06/2026)
+# ------------------------------------------------------------
+# Mesmo layout de duas areas: formulario a esquerda, tabela a
+# direita (cresce com a janela).
+# ============================================================
+
 import tkinter as tk
 from tkinter import messagebox, ttk
 import banco_dados as bd
+import ui
 
-# Feito por Kael na tela do cadastro de equipamento
+
 def montar_cadastro_equipamento(container, navegar):
-    for widget in container.winfo_children():
-        widget.destroy()
+    ui.limpar(container)
+    corpo = ui.barra_topo(container, "Cadastro de Equipamento",
+                          lambda: navegar("dashboard"))
+    corpo.columnconfigure(1, weight=1)
+    corpo.rowconfigure(0, weight=1)
 
-    container.grid_columnconfigure(0, weight=1)
+    # ---- Formulario (esquerda) ----
+    form = ui.card(corpo)
+    form.grid(row=0, column=0, sticky="n", padx=(0, 18))
+    interno = tk.Frame(form, bg=ui.COR_CARD)
+    interno.pack(padx=28, pady=24)
+    ui.lbl(interno, "Novo equipamento", fonte=ui.F_H2).pack(anchor="w", pady=(0, 4))
 
-# --- BOTÃO VOLTAR ---
-    # Ele fica no topo para fácil acesso
-    tk.Button(container, text="← Voltar", command=lambda: navegar("dashboard"), bg="#1f4fc4", fg="white").grid(row=0, column=0, sticky="w", padx=10, pady=5)
-    
-    frame_cadastro_equipamento = tk.Frame(container)
-    frame_cadastro_equipamento.grid(row=1, column=0, pady=10)
-
-    tk.Label(frame_cadastro_equipamento, text="ShareSpace", font=("Arial", 24, "bold")).grid(row=0, column=0, pady=(0, 15))
-    tk.Label(frame_cadastro_equipamento, text="Cadastro de Equipamento", font=("Arial", 16, "bold")).grid(row=1, column=0, pady=(0, 15))
-    
-    tk.Label(frame_cadastro_equipamento, text="Nome do Equipamento:", font=("Arial", 15, "bold")).grid(row=2, column=0, pady=(0, 5))
-    ent_nome_equipamento = tk.Entry(frame_cadastro_equipamento, width=40)
-    ent_nome_equipamento.grid(row=3, column=0, pady=(0, 10))
-
-    tk.Label(frame_cadastro_equipamento, text="Quantidade Disponível:", font=("Arial", 15, "bold")).grid(row=4, column=0, pady=(0, 5))
-    ent_quantidade = tk.Entry(frame_cadastro_equipamento, width=40)
-    ent_quantidade.grid(row=5, column=0, pady=(0, 10))
+    ent_nome = ui.campo(interno, "NOME DO EQUIPAMENTO", largura=28)
+    ent_quantidade = ui.campo(interno, "QUANTIDADE DISPONIVEL", largura=28)
 
     def salvar_equipamento():
-        nome = ent_nome_equipamento.get()
-        quantidade_disponivel = ent_quantidade.get()
-
-        if nome == "" or quantidade_disponivel == "":
-            messagebox.showwarning("Atencao", "Preencha pelo menos o Nome e a Quantidade do Equipamento.")
+        nome = ent_nome.get()
+        quantidade = ent_quantidade.get()
+        if nome == "" or quantidade == "":
+            messagebox.showwarning("Atencao",
+                                   "Preencha pelo menos o Nome e a Quantidade do Equipamento.")
             return
-
-        cadastro_equipamento = bd.cadastrar_equipamento(
-            nome, quantidade_disponivel)
-
-        if cadastro_equipamento:
+        if bd.cadastrar_equipamento(nome, quantidade):
             messagebox.showinfo("Sucesso", "Equipamento cadastrado!")
         else:
             messagebox.showerror("Erro", "Ja existe um equipamento cadastrado.")
 
     def deletar_equipamento():
-        item_selecionado = tabela.selection()
-
-        valores = tabela.item(item_selecionado, "values")
-        id_equipamento = valores[0]
-
+        item = tabela.selection()
+        if not item:
+            messagebox.showwarning("Atencao", "Selecione um equipamento na tabela.")
+            return
+        id_equip = tabela.item(item, "values")[0]
         if messagebox.askyesno("Confirmar", "Deseja excluir este equipamento?"):
-            bd.deletar_equipamento(id_equipamento)
+            bd.deletar_equipamento(id_equip)
+            tabela.delete(item)
 
-    #Esperando o command para editar e excluir o registro do equipamento
-    tk.Button(frame_cadastro_equipamento, text="Salvar", command=salvar_equipamento, bg="#1f4fc4", fg="white").grid(row=6, column=0, pady=(0, 15))
-    tk.Button(frame_cadastro_equipamento, text="Editar", bg="#1f4fc4", fg="white").grid(row=7, column=0, pady=(0, 15))
-    tk.Button(frame_cadastro_equipamento, text="Excluir", command=deletar_equipamento ,bg="#d32d2d", fg="black").grid(row=8, column=0, pady=(0, 15))
+    acoes = tk.Frame(interno, bg=ui.COR_CARD)
+    acoes.pack(fill="x", pady=(20, 0))
+    ui.botao(acoes, "Salvar", salvar_equipamento, variante="sucesso",
+             icone_nome="disponivel").pack(side="left")
+    ui.botao(acoes, "Editar", lambda: None, variante="neutro").pack(side="left", padx=8)
+    ui.botao(acoes, "Excluir", deletar_equipamento, variante="perigo").pack(side="left")
 
-    frame_tabela_equipamento = tk.Frame(container)
-    frame_tabela_equipamento.grid(row=10, column=0, pady=15, padx=20, sticky="nsew")
+    # ---- Tabela (direita) ----
+    bloco = ui.card(corpo)
+    bloco.grid(row=0, column=1, sticky="nsew")
+    bloco.rowconfigure(0, weight=1)
+    bloco.columnconfigure(0, weight=1)
 
     colunas = ("id", "equipamento", "quantidade")
+    titulos = ("Id", "Nome do Equipamento", "Quantidade Disponivel")
+    larguras = (50, 220, 160)
+    tabela = ttk.Treeview(bloco, columns=colunas, show="headings")
+    for c, t, w in zip(colunas, titulos, larguras):
+        tabela.heading(c, text=t)
+        tabela.column(c, width=w, anchor="center")
 
-    tabela = ttk.Treeview(
-        frame_tabela_equipamento,
-        columns=colunas,
-        show="headings",
-        height=7
-    )
+    scroll = ttk.Scrollbar(bloco, orient="vertical", command=tabela.yview)
+    tabela.configure(yscrollcommand=scroll.set)
+    tabela.grid(row=0, column=0, sticky="nsew", padx=(10, 0), pady=10)
+    scroll.grid(row=0, column=1, sticky="ns", pady=10, padx=(0, 10))
 
-    # Cabeçalhos
-    tabela.heading("id", text="Id")
-    tabela.heading("equipamento", text="Nome do Equipamento")
-    tabela.heading("quantidade", text="Quantidade Disponível")
-
-    # Tamanho das colunas
-    tabela.column("id", width=50, anchor="center")
-    tabela.column("equipamento", width=100, anchor="center")
-    tabela.column("quantidade", width=20, anchor="center")
-
-    # Scrollbar vertical
-    scroll_y = ttk.Scrollbar(
-        frame_tabela_equipamento,
-        orient="vertical",
-        command=tabela.yview
-    )
-
-    tabela.configure(yscrollcommand=scroll_y.set)
-
-    tabela.grid(row=0, column=0, sticky="nsew")
-    scroll_y.grid(row=0, column=1, sticky="ns")
-
-    # Permite a tabela expandir dentro do frame
-    frame_tabela_equipamento.grid_rowconfigure(0, weight=1)
-    frame_tabela_equipamento.grid_columnconfigure(0, weight=1)
-
-    # --- CARREGAR DADOS NA TABELA ---
-    equipamentos = bd.listar_equipamentos()
-
-    for linha in equipamentos:
-        tabela.insert("", "end", values=linha)
-
-
-
-
-
-
+    ui.zebrar(tabela, bd.listar_equipamentos())

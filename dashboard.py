@@ -1,54 +1,71 @@
 # ============================================================
-# TELA DASHBOARD (tela inicial, depois do login)
-# Tela criada por Dener em 17/06/2026
+# TELA DASHBOARD  (redesign profissional - 23/06/2026)
 # ------------------------------------------------------------
-# E o "menu principal" do sistema. Mostra um resumo da ocupacao
-# das salas e tem botoes para abrir as outras telas.
+# Painel principal: cabecalho com a marca, cartoes de numeros
+# (resumo) e uma grade de cartoes clicaveis (o menu).
+# Tudo se ajusta quando a janela cresce (grid + weight).
 # ============================================================
 
 import tkinter as tk
+import ui
 
 
 def montar_dashboard(container, navegar):
-    # limpa a tela anterior
-    for widget in container.winfo_children():
-        widget.destroy()
+    ui.limpar(container)
 
-    # ---- Cabecalho ----
-    tk.Label(container, text="ShareSpace - Painel", font=("Arial", 22, "bold")).pack(pady=15)
+    # ---- Cabecalho (barra branca no topo) ----
+    cab = tk.Frame(container, bg=ui.COR_CARD,
+                   highlightbackground=ui.COR_BORDA, highlightthickness=1)
+    cab.pack(fill="x")
+    cabint = tk.Frame(cab, bg=ui.COR_CARD)
+    cabint.pack(fill="x", padx=28, pady=14)
 
-    # ---- Area dos indicadores (numeros de resumo) ----
-    # POR ENQUANTO os numeros sao de exemplo. MAIS PARA FRENTE eles virao
-    # de contas feitas em cima da tabela "reserva" do banco de dados.
-    quadro_info = tk.Frame(container)
-    quadro_info.pack(pady=10)
+    lg = ui.logo(34)
+    li = tk.Label(cabint, image=lg, bg=ui.COR_CARD)
+    li.image = lg
+    li.pack(side="left")
+    ui.lbl(cabint, "ShareSpace", fonte=ui.F_LOGO).pack(side="left", padx=10)
+    ui.botao(cabint, "Sair", lambda: navegar("login"),
+             variante="neutro", icone_nome="sair").pack(side="right")
 
-    tk.Label(quadro_info, text="Ocupacao geral: 62%", font=("Arial", 14)).grid(row=0, column=0, padx=20)
-    tk.Label(quadro_info, text="Salas disponiveis: 38%", font=("Arial", 14)).grid(row=0, column=1, padx=20)
-    tk.Label(quadro_info, text="Salas em manutencao: 1", font=("Arial", 14)).grid(row=0, column=2, padx=20)
+    # ---- Corpo ----
+    corpo = tk.Frame(container, bg=ui.COR_FUNDO)
+    corpo.pack(fill="both", expand=True, padx=28, pady=20)
 
-    # ---- Botoes do menu (abrem as outras telas) ----
-    quadro_menu = tk.Frame(container)
-    quadro_menu.pack(pady=30)
+    ui.lbl(corpo, "Visao geral", fonte=ui.F_H2, bg=ui.COR_FUNDO).pack(anchor="w")
 
-    # Esta lista guarda: (texto que aparece no botao, nome da tela que ele abre).
-    botoes = [
-        ("Buscar Salas",            "busca"),
-        ("Cadastrar Equipamento",   "cadastro_equipamento"),
-        ("Cadastrar Sala",          "cadastro_sala"),
-        ("Cadastrar Cliente",       "cadastro_cliente"),
-        ("Historico de Reservas",   "historico"),
-        ("Backup / Configuracoes",  "backup"),
+    # ---- Cartoes de numeros (resumo) ----
+    stats = tk.Frame(corpo, bg=ui.COR_FUNDO)
+    stats.pack(fill="x", pady=(10, 22))
+    indicadores = [
+        ("ocupacao",   ui.COR_PRIMARIA, "62%", "Ocupacao geral"),
+        ("disponivel", ui.COR_SUCESSO,  "38%", "Salas disponiveis"),
+        ("manutencao", ui.COR_AVISO,    "1",   "Salas em manutencao"),
     ]
+    for i, (ic, cor, val, desc) in enumerate(indicadores):
+        c = ui.card_estatistica(stats, ic, cor, val, desc)
+        c.grid(row=0, column=i, sticky="ew", padx=(0 if i == 0 else 14, 0))
+        stats.columnconfigure(i, weight=1)
 
-    # Aqui montamos os botoes em um laco (for) para nao repetir codigo.
-    linha = 0
-    for texto, nome_tela in botoes:
-        # ATENCAO ao "t=nome_tela": isso faz cada botao guardar o SEU proprio nome
-        # de tela. Sem isso, todos os botoes acabariam abrindo a mesma tela (a ultima).
-        tk.Button(quadro_menu, text=texto, width=25, height=2, bg="#1f4fc4", fg="white",
-                  command=lambda t=nome_tela: navegar(t)).grid(row=linha, column=0, pady=5)
-        linha = linha + 1
+    # ---- Grade de cartoes do menu ----
+    ui.lbl(corpo, "Acoes", fonte=ui.F_H2, bg=ui.COR_FUNDO).pack(anchor="w", pady=(4, 8))
+    menu = tk.Frame(corpo, bg=ui.COR_FUNDO)
+    menu.pack(fill="both", expand=True)
 
-    # Botao de sair (volta para o login)
-    tk.Button(container, text="Sair", command=lambda: navegar("login")).pack(pady=10)
+    cartoes = [
+        ("busca",        "Buscar Salas",          "busca"),
+        ("equipamento",  "Cadastrar Equipamento", "cadastro_equipamento"),
+        ("sala",         "Cadastrar Sala",        "cadastro_sala"),
+        ("cliente",      "Cadastrar Cliente",     "cadastro_cliente"),
+        ("historico",    "Historico de Reservas", "historico"),
+        ("backup",       "Backup / Config.",      "backup"),
+    ]
+    colunas = 3
+    for idx, (ic, titulo, tela) in enumerate(cartoes):
+        linha, col = divmod(idx, colunas)
+        c = ui.card_menu(menu, ic, titulo, lambda t=tela: navegar(t))
+        c.grid(row=linha, column=col, sticky="nsew", padx=8, pady=8)
+    for col in range(colunas):
+        menu.columnconfigure(col, weight=1)
+    for linha in range((len(cartoes) + colunas - 1) // colunas):
+        menu.rowconfigure(linha, weight=1)
