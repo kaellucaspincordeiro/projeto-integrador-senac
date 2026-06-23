@@ -2,6 +2,7 @@
 # TELA DE RECUPERAR SENHA  (redesign profissional - 23/06/2026)
 # ------------------------------------------------------------
 # Cartao centralizado com a pergunta de seguranca e a nova senha.
+# Modificado por Fernando (23/06/2026) - Ajustes de ortografia e layout.
 # ============================================================
 
 import tkinter as tk
@@ -22,7 +23,7 @@ def montar_recuperar_senha(container, navegar):
     cab.image = lg
     cab.pack()
     ui.lbl(interno, "Recuperar Senha", fonte=ui.F_H1).pack(pady=(10, 2))
-    ui.lbl(interno, "Responda a pergunta de seguranca para criar uma nova senha.",
+    ui.lbl(interno, "Responda à pergunta de segurança para criar uma nova senha.",
            fonte=ui.F_PEQ, fg=ui.COR_TEXTO_FRACO).pack(pady=(0, 12))
 
     ui.lbl(interno, "Pergunta: Nome do seu primeiro animal?",

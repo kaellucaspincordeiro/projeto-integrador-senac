@@ -7,6 +7,7 @@
 #
 # Esta tela JA conversa com o banco de dados: quando clicamos em
 # Salvar, ela chama a funcao bd.cadastrar_cliente(...).
+# Modificado por Fernando (23/06/2026) - Ajustes de ortografia e layout.
 # ============================================================
 
 import tkinter as tk
@@ -35,8 +36,8 @@ def montar_cadastro_cliente(container, navegar):
     tk.Label(quadro, text="Tipo:", font=("Arial", 12)).grid(row=1, column=0, sticky="w")
     quadro_tipo = tk.Frame(quadro)
     quadro_tipo.grid(row=1, column=1, sticky="w")
-    tk.Radiobutton(quadro_tipo, text="Fisica (CPF)", variable=tipo, value="F").pack(side="left")
-    tk.Radiobutton(quadro_tipo, text="Juridica (CNPJ)", variable=tipo, value="J").pack(side="left")
+    tk.Radiobutton(quadro_tipo, text="Física (CPF)", variable=tipo, value="F").pack(side="left")
+    tk.Radiobutton(quadro_tipo, text="Jurídica (CNPJ)", variable=tipo, value="J").pack(side="left")
 
     # Campos de texto
     tk.Label(quadro, text="Nome:", font=("Arial", 12)).grid(row=2, column=0, sticky="w", pady=5)
@@ -63,7 +64,7 @@ def montar_cadastro_cliente(container, navegar):
         # Checagem simples: nome e documento sao obrigatorios.
         # MAIS PARA FRENTE: aqui tambem vamos validar os digitos do CPF/CNPJ (regra RN2).
         if nome == "" or cpf_cnpj == "":
-            messagebox.showwarning("Atencao", "Preencha pelo menos o Nome e o CPF/CNPJ.")
+            messagebox.showwarning("Atenção", "Preencha pelo menos o Nome e o CPF/CNPJ.")
             return
 
         # Chamamos a funcao do banco de dados (esta no banco_dados.py).
@@ -75,7 +76,7 @@ def montar_cadastro_cliente(container, navegar):
             messagebox.showinfo("Sucesso", "Cliente cadastrado!")
             navegar("dashboard")
         else:
-            messagebox.showerror("Erro", "Ja existe um cliente com esse CPF/CNPJ.")
+            messagebox.showerror("Erro", "Já existe um cliente com esse CPF/CNPJ.")
 
     tk.Button(quadro, text="Salvar", width=20, bg="#1f4fc4", fg="white",
               command=salvar_cliente).grid(row=6, column=0, columnspan=2, pady=20)

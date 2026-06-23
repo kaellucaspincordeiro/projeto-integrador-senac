@@ -3,6 +3,7 @@
 # ------------------------------------------------------------
 # Layout de duas areas: formulario a esquerda e a tabela de salas
 # a direita (a tabela cresce junto com a janela).
+# Modificado por Fernando (23/06/2026) - Ajustes de ortografia e layout.
 # ============================================================
 
 import tkinter as tk
@@ -25,10 +26,10 @@ def montar_cadastrar_sala(container, funcao_voltar):
     ui.lbl(interno, "Nova sala", fonte=ui.F_H2).pack(anchor="w", pady=(0, 4))
 
     ent_nome = ui.campo(interno, "NOME DA SALA", largura=28)
-    ent_numero = ui.campo(interno, "NUMERO DA SALA", largura=28)
+    ent_numero = ui.campo(interno, "NÚMERO DA SALA", largura=28)
     ent_andar = ui.campo(interno, "ANDAR DA SALA", largura=28)
     ent_capacidade = ui.campo(interno, "CAPACIDADE", largura=28)
-    ent_observacao = ui.campo(interno, "OBSERVACOES", largura=28)
+    ent_observacao = ui.campo(interno, "OBSERVAÇÕES", largura=28)
 
     def salvar_sala():
         nome = ent_nome.get()
@@ -37,12 +38,12 @@ def montar_cadastrar_sala(container, funcao_voltar):
         capacidade = ent_capacidade.get()
         observacao = ent_observacao.get()
         if nome == "" or numero == "" or andar == "" or capacidade == "" or observacao == "":
-            messagebox.showwarning("Atencao", "Preencha os campos da sala.")
+            messagebox.showwarning("Atenção", "Preencha os campos da sala.")
             return
         if bd.cadastrar_sala(nome, numero, andar, capacidade, observacao):
             messagebox.showinfo("Sucesso", "Sala cadastrada!")
         else:
-            messagebox.showerror("Erro", "Ja existe uma sala registrada.")
+            messagebox.showerror("Erro", "Já existe uma sala registrada.")
 
     acoes = tk.Frame(interno, bg=ui.COR_CARD)
     acoes.pack(fill="x", pady=(20, 0))
@@ -58,7 +59,7 @@ def montar_cadastrar_sala(container, funcao_voltar):
     bloco.columnconfigure(0, weight=1)
 
     colunas = ("id", "nome", "numero", "andar", "capacidade", "observacao", "status")
-    titulos = ("Id", "Nome", "Numero", "Andar", "Capac.", "Observacoes", "Status")
+    titulos = ("Id", "Nome", "Número", "Andar", "Capac.", "Observações", "Status")
     larguras = (50, 130, 80, 70, 70, 160, 90)
     tabela = ttk.Treeview(bloco, columns=colunas, show="headings")
     for c, t, w in zip(colunas, titulos, larguras):

@@ -4,6 +4,7 @@
 # Card de filtros no topo + lista de resultados com etiquetas
 # coloridas (verde = disponivel, laranja = ocupada, vermelho =
 # manutencao).
+# Modificado por Fernando (23/06/2026) - Ajustes de ortografia e layout.
 # ============================================================
 
 import tkinter as tk
@@ -30,7 +31,7 @@ def montar_busca_salas(container, navegar):
 
     f1, _ = campo_inline("DATA (AAAA-MM-DD)", 14)
     f1.pack(side="left", padx=(0, 14))
-    f2, _ = campo_inline("INICIO", 8)
+    f2, _ = campo_inline("INÍCIO", 8)
     f2.pack(side="left", padx=(0, 14))
     f3, _ = campo_inline("FIM", 8)
     f3.pack(side="left", padx=(0, 14))
@@ -57,11 +58,11 @@ def montar_busca_salas(container, navegar):
             ui.botao(dentro, "Reservar", lambda: navegar("agendamento"),
                      icone_nome="agendamento").pack(side="right")
 
-    titulo_grupo("DISPONIVEIS", ui.COR_SUCESSO)
-    linha_sala("Sala Alfa  -  101, 1o andar, 8 lugares", com_botao=True)
+    titulo_grupo("DISPONÍVEIS", ui.COR_SUCESSO)
+    linha_sala("Sala Alfa  - 1º andar - 8 lugares", com_botao=True)
 
-    titulo_grupo("INDISPONIVEIS", ui.COR_AVISO)
-    linha_sala("Sala Beta (502)  -  ocupada das 14h as 17h")
+    titulo_grupo("INDISPONÍVEIS", ui.COR_AVISO)
+    linha_sala("Sala Beta (502)  - 5º andar - 6 lugares [Ocupada das 14h às 17h]")
 
-    titulo_grupo("EM MANUTENCAO", ui.COR_PERIGO)
-    linha_sala("Sala Gama (1503)")
+    titulo_grupo("EM MANUTENÇÃO", ui.COR_PERIGO)
+    linha_sala("Sala Gama (1503) - 15º andar - 10 lugares [Em manutenção]")

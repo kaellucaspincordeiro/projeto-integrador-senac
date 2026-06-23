@@ -3,6 +3,7 @@
 # ------------------------------------------------------------
 # Primeira tela do sistema. Visual de "cartao centralizado",
 # que se mantem no meio em qualquer tamanho de janela.
+# Modificado por Fernando (23/06/2026) - Ajustes de ortografia e layout.
 # ============================================================
 
 import tkinter as tk
@@ -25,7 +26,7 @@ def montar_login(container, navegar):
     cab.image = lg
     cab.pack()
     ui.lbl(interno, "ShareSpace", fonte=ui.F_LOGO).pack(pady=(12, 0))
-    ui.lbl(interno, "Gestao de Salas de Reuniao",
+    ui.lbl(interno, "Gestão de Salas de Reunião",
            fonte=ui.F_TEXTO, fg=ui.COR_TEXTO_FRACO).pack(pady=(2, 20))
 
     # Campos
@@ -36,7 +37,7 @@ def montar_login(container, navegar):
         email = entrada_email.get()
         senha = entrada_senha.get()
         if email == "" or senha == "":
-            messagebox.showwarning("Atencao", "Preencha o e-mail e a senha.")
+            messagebox.showwarning("Atenção", "Preencha o e-mail e a senha.")
             entrada_email.delete(0, "end")
             entrada_senha.delete(0, "end")
             entrada_email.focus()

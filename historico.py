@@ -3,6 +3,7 @@
 # ------------------------------------------------------------
 # Tabela estilizada (cabecalho azul + linhas zebra) que cresce
 # junto com a janela.
+# Modificado por Fernando (23/06/2026) - Ajustes de ortografia e layout.
 # ============================================================
 
 import tkinter as tk
@@ -13,7 +14,7 @@ import ui
 
 def montar_historico(container, navegar):
     ui.limpar(container)
-    corpo = ui.barra_topo(container, "Historico de Reservas",
+    corpo = ui.barra_topo(container, "Histórico de Reservas",
                           lambda: navegar("dashboard"))
 
     cartao = ui.card(corpo)
@@ -21,10 +22,10 @@ def montar_historico(container, navegar):
     cartao.rowconfigure(0, weight=1)
     cartao.columnconfigure(0, weight=1)
 
-    colunas = ("id", "sala", "cliente", "data", "inicio", "fim", "status", "criado_em")
+    colunas = ("id", "sala", "cliente", "data", "início", "fim", "status", "criado_em")
     tabela = ttk.Treeview(cartao, columns=colunas, show="headings")
     larguras = {"id": 50, "sala": 150, "cliente": 160, "data": 100,
-                "inicio": 80, "fim": 80, "status": 110, "criado_em": 150}
+                "início": 80, "fim": 80, "status": 110, "criado_em": 150}
     for c in colunas:
         tabela.heading(c, text=c.replace("_", " ").capitalize())
         tabela.column(c, width=larguras.get(c, 100), anchor="center")

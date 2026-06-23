@@ -4,6 +4,7 @@
 # Painel principal: cabecalho com a marca, cartoes de numeros
 # (resumo) e uma grade de cartoes clicaveis (o menu).
 # Tudo se ajusta quando a janela cresce (grid + weight).
+# Modificado por Fernando (23/06/2026) - Ajustes de ortografia e layout.
 # ============================================================
 
 import tkinter as tk
@@ -32,15 +33,15 @@ def montar_dashboard(container, navegar):
     corpo = tk.Frame(container, bg=ui.COR_FUNDO)
     corpo.pack(fill="both", expand=True, padx=28, pady=20)
 
-    ui.lbl(corpo, "Visao geral", fonte=ui.F_H2, bg=ui.COR_FUNDO).pack(anchor="w")
+    ui.lbl(corpo, "Visão geral", fonte=ui.F_H2, bg=ui.COR_FUNDO).pack(anchor="w")
 
     # ---- Cartoes de numeros (resumo) ----
     stats = tk.Frame(corpo, bg=ui.COR_FUNDO)
     stats.pack(fill="x", pady=(10, 22))
     indicadores = [
-        ("ocupacao",   ui.COR_PRIMARIA, "62%", "Ocupacao geral"),
-        ("disponivel", ui.COR_SUCESSO,  "38%", "Salas disponiveis"),
-        ("manutencao", ui.COR_AVISO,    "1",   "Salas em manutencao"),
+        ("ocupacao",   ui.COR_PRIMARIA, "62%", "Ocupação geral"),
+        ("disponivel", ui.COR_SUCESSO,  "38%", "Salas disponíveis"),
+        ("manutencao", ui.COR_AVISO,    "1",   "Salas em manutenção"),
     ]
     for i, (ic, cor, val, desc) in enumerate(indicadores):
         c = ui.card_estatistica(stats, ic, cor, val, desc)
@@ -48,7 +49,7 @@ def montar_dashboard(container, navegar):
         stats.columnconfigure(i, weight=1)
 
     # ---- Grade de cartoes do menu ----
-    ui.lbl(corpo, "Acoes", fonte=ui.F_H2, bg=ui.COR_FUNDO).pack(anchor="w", pady=(4, 8))
+    ui.lbl(corpo, "Ações", fonte=ui.F_H2, bg=ui.COR_FUNDO).pack(anchor="w", pady=(4, 8))
     menu = tk.Frame(corpo, bg=ui.COR_FUNDO)
     menu.pack(fill="both", expand=True)
 
@@ -57,7 +58,7 @@ def montar_dashboard(container, navegar):
         ("equipamento",  "Cadastrar Equipamento", "cadastro_equipamento"),
         ("sala",         "Cadastrar Sala",        "cadastro_sala"),
         ("cliente",      "Cadastrar Cliente",     "cadastro_cliente"),
-        ("historico",    "Historico de Reservas", "historico"),
+        ("historico",    "Histórico de Reservas", "historico"),
         ("backup",       "Backup / Config.",      "backup"),
     ]
     colunas = 3

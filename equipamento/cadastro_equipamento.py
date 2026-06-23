@@ -3,6 +3,7 @@
 # ------------------------------------------------------------
 # Mesmo layout de duas areas: formulario a esquerda, tabela a
 # direita (cresce com a janela).
+# Modificado por Fernando (23/06/2026) - Ajustes de ortografia e layout.
 # ============================================================
 
 import tkinter as tk
@@ -26,24 +27,24 @@ def montar_cadastro_equipamento(container, navegar):
     ui.lbl(interno, "Novo equipamento", fonte=ui.F_H2).pack(anchor="w", pady=(0, 4))
 
     ent_nome = ui.campo(interno, "NOME DO EQUIPAMENTO", largura=28)
-    ent_quantidade = ui.campo(interno, "QUANTIDADE DISPONIVEL", largura=28)
+    ent_quantidade = ui.campo(interno, "QUANTIDADE DISPONÍVEL", largura=28)
 
     def salvar_equipamento():
         nome = ent_nome.get()
         quantidade = ent_quantidade.get()
         if nome == "" or quantidade == "":
-            messagebox.showwarning("Atencao",
+            messagebox.showwarning("Atenção",
                                    "Preencha pelo menos o Nome e a Quantidade do Equipamento.")
             return
         if bd.cadastrar_equipamento(nome, quantidade):
             messagebox.showinfo("Sucesso", "Equipamento cadastrado!")
         else:
-            messagebox.showerror("Erro", "Ja existe um equipamento cadastrado.")
+            messagebox.showerror("Erro", "Já existe um equipamento cadastrado.")
 
     def deletar_equipamento():
         item = tabela.selection()
         if not item:
-            messagebox.showwarning("Atencao", "Selecione um equipamento na tabela.")
+            messagebox.showwarning("Atenção", "Selecione um equipamento na tabela.")
             return
         id_equip = tabela.item(item, "values")[0]
         if messagebox.askyesno("Confirmar", "Deseja excluir este equipamento?"):
@@ -64,7 +65,7 @@ def montar_cadastro_equipamento(container, navegar):
     bloco.columnconfigure(0, weight=1)
 
     colunas = ("id", "equipamento", "quantidade")
-    titulos = ("Id", "Nome do Equipamento", "Quantidade Disponivel")
+    titulos = ("Id", "Nome do Equipamento", "Quantidade Disponível")
     larguras = (50, 220, 160)
     tabela = ttk.Treeview(bloco, columns=colunas, show="headings")
     for c, t, w in zip(colunas, titulos, larguras):

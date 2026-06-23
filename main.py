@@ -11,6 +11,7 @@
 # chamada "container". Cada tela e desenhada DENTRO dessa caixa.
 # Quando trocamos de tela, a gente limpa a caixa e desenha a nova.
 # Kael: Adicionando a tela do cadastro de equipamento 
+# Modificado por Fernando (23/06/2026) - Ajustes de ortografia e layout.
 # ============================================================
 
 import tkinter as tk
@@ -37,7 +38,7 @@ bd.inicializar_banco()
 
 # ---- Janela principal ----
 janela = tk.Tk()
-janela.title("ShareSpace - Gestao de Salas de Reuniao")
+janela.title("ShareSpace - Gestão de Salas de Reunião")
 
 # Aplica o tema profissional (cores, fontes, estilo das tabelas).
 ui.aplicar_tema(janela)
