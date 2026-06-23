@@ -76,10 +76,11 @@ def montar_agendamento(container, navegar):
 
         duracao = hora_fim - hora_inicio
 
-        def horas_permitidos(hora_inicio, hora_fim):
-            if hora_inicio < "08:00" or hora_fim > "18:00":
-                return False
-            return True
+        def horas_permitidas(hora_inicio, hora_fim):
+            return hora_inicio <= "08:00" or hora_fim <= "18:00"
+        
+        if not horas_permitidas(hora_inicio, hora_fim):
+            messagebox.showerror("Erro no horário", "O horário deve estar entre 08:00 e 18:00.")
 
         if sala == "" or cliente == "" or data == "" or hora_inicio == "" or hora_fim == "":
             messagebox.showwarning("Atencao", "Preencha todos os campos para o agendamento.")
@@ -88,7 +89,7 @@ def montar_agendamento(container, navegar):
         agendamento = bd.cadastrar_reserva(
             sala, cliente, data, hora_inicio, hora_fim)
 
-        if agendamento and duracao and horas_permitidos(hora_inicio, hora_fim):
+        if agendamento:
             messagebox.showinfo("Sucesso", "Reserva cadastrada!")
         else:
             messagebox.showinfo("Erro", "Problema ao cadastrar a reserva.")
