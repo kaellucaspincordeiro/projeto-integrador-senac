@@ -93,12 +93,24 @@ def montar_agendamento(container, navegar):
             messagebox.showinfo("Sucesso", "Reserva cadastrada!")
         else:
             messagebox.showinfo("Erro", "Problema ao cadastrar a reserva.")
+    
+    def excluir_reserva():
+        item_selecionado = tabela.selection()
+
+        valores = tabela.item(item_selecionado, "values")
+        id_reserva = valores[0]
+
+        if messagebox.askyesno("Confirmar", "Deseja excluir uma reserva dentro da agenda?"):
+            bd.deletar_reserva(id_reserva)
 
     tk.Button(quadro, text="Confirmar", width=20, bg="#1f4fc4", fg="white",
               command=confirmar).grid(row=7, column=0, columnspan=2, pady=20)
     
+    tk.Button(quadro, text="Excluir", width=20, bg="#dc3545", fg="white",
+              command=excluir_reserva).grid(row=8, column=1, columnspan=2, pady=20)
+
     frame_tabela_reserva = tk.Frame(container)
-    frame_tabela_reserva.grid(row=9, column=0, pady=15, padx=20, sticky="nsew")
+    frame_tabela_reserva.grid(row=10, column=0, pady=15, padx=20, sticky="nsew")
 
     colunas = ("id", "sala", "cliente", "data", "inicio", "fim")
 
