@@ -34,6 +34,7 @@ def montar_dashboard(container, navegar):
     # Esta lista guarda: (texto que aparece no botao, nome da tela que ele abre).
     botoes = [
         ("Buscar Salas",            "busca"),
+        ("Agendar Reserva",         "agendamento"),
         ("Cadastrar Equipamento",   "cadastro_equipamento"),
         ("Cadastrar Sala",          "cadastro_sala"),
         ("Cadastrar Cliente",       "cadastro_cliente"),

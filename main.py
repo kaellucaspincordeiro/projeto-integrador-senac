@@ -22,7 +22,8 @@ from recuperar_senha import montar_recuperar_senha
 from dashboard import montar_dashboard
 from cliente.cadastro_cliente import montar_cadastro_cliente
 from busca_salas import montar_busca_salas
-from agendamento import montar_agendamento
+# A tela de agendamento fica dentro da pasta "reserva".
+from reserva.agendamento import montar_agendamento
 from historico import montar_historico
 from backup import montar_backup
 # A tela de cadastro de sala fica dentro da pasta "sala".
