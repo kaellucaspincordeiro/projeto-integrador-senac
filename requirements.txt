@@ -1,0 +1,7 @@
+# Bibliotecas que precisam ser instaladas com o pip.
+# (tkinter, sqlite3, shutil e math ja vem junto com o Python.)
+#
+# Para instalar tudo de uma vez, rode na pasta do projeto:
+#     pip install -r requirements.txt
+
+Pillow>=10.0.0
