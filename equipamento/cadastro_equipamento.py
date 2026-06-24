@@ -32,7 +32,7 @@ def montar_cadastro_equipamento(container, navegar):
     def salvar_equipamento():
         nome = ent_nome.get()
         quantidade = ent_quantidade.get()
-        if nome == "" or quantidade == "":
+        if nome.isalpha() == "" or quantidade.isalpha() == "":
             messagebox.showwarning("Atenção",
                                    "Preencha pelo menos o Nome e a Quantidade do Equipamento.")
             return
