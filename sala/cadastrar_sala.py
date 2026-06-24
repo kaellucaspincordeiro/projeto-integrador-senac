@@ -37,7 +37,7 @@ def montar_cadastrar_sala(container, funcao_voltar):
         andar = ent_andar.get()
         capacidade = ent_capacidade.get()
         observacao = ent_observacao.get()
-        if nome == "" or numero == "" or andar == "" or capacidade == "" or observacao == "":
+        if nome.isalpha() == "" or numero.isnumeric() == "" or andar.isalpha() == "" or int(capacidade) == "" or observacao.isalpha() == "":
             messagebox.showwarning("Atenção", "Preencha os campos da sala.")
             return
         if bd.cadastrar_sala(nome, numero, andar, capacidade, observacao):
@@ -45,12 +45,22 @@ def montar_cadastrar_sala(container, funcao_voltar):
         else:
             messagebox.showerror("Erro", "Já existe uma sala registrada.")
 
+    def excluir_sala():
+        item = tabela.selection()
+        if not item:
+            messagebox.showwarning("Atenção", "Selecione uma sala na tabela.")
+            return
+        id_sala = tabela.item(item, "values")[0]
+        if messagebox.askyesno("Confirmar", "Deseja excluir esta sala?"):
+            bd.deletar_sala(id_sala)
+            tabela.delete(item)
+
     acoes = tk.Frame(interno, bg=ui.COR_CARD)
     acoes.pack(fill="x", pady=(20, 0))
     ui.botao(acoes, "Salvar", salvar_sala, variante="sucesso",
              icone_nome="disponivel").pack(side="left")
     ui.botao(acoes, "Editar", lambda: None, variante="neutro").pack(side="left", padx=8)
-    ui.botao(acoes, "Excluir", lambda: None, variante="perigo").pack(side="left")
+    ui.botao(acoes, "Excluir", excluir_sala, variante="perigo").pack(side="left")
 
     # ---- Tabela (direita) ----
     bloco = ui.card(corpo)
