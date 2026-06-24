@@ -37,9 +37,15 @@ def montar_cadastrar_sala(container, funcao_voltar):
         andar = ent_andar.get()
         capacidade = ent_capacidade.get()
         observacao = ent_observacao.get()
-        if nome.isalpha() == "" or numero.isnumeric() == "" or andar.isalpha() == "" or int(capacidade) == "" or observacao.isalpha() == "":
+        if nome == "" or numero == "" or andar == "" or capacidade == "" or observacao == "":
             messagebox.showwarning("Atenção", "Preencha os campos da sala.")
             return
+        
+        if not capacidade.isdigit():
+            messagebox.showwarning("Atenção", "Este campo deve ser um número inteiro!")
+            return
+        capacidade = int(capacidade)
+
         if bd.cadastrar_sala(nome, numero, andar, capacidade, observacao):
             messagebox.showinfo("Sucesso", "Sala cadastrada!")
         else:

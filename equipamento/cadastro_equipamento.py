@@ -32,10 +32,16 @@ def montar_cadastro_equipamento(container, navegar):
     def salvar_equipamento():
         nome = ent_nome.get()
         quantidade = ent_quantidade.get()
-        if nome.isalpha() == "" or quantidade.isalpha() == "":
+        if nome == "" or quantidade == "":
             messagebox.showwarning("Atenção",
                                    "Preencha pelo menos o Nome e a Quantidade do Equipamento.")
             return
+        
+        if not quantidade.isdigit():
+            messagebox.showwarning("Atenção", "Este campo deve ser um número inteiro!")
+            return
+        quantidade = int(quantidade)
+        
         if bd.cadastrar_equipamento(nome, quantidade):
             messagebox.showinfo("Sucesso", "Equipamento cadastrado!")
         else:
