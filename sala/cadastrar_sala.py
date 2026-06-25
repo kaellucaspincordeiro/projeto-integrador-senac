@@ -4,6 +4,11 @@
 # Layout de duas areas: formulario a esquerda e a tabela de salas
 # a direita (a tabela cresce junto com a janela).
 # Modificado por Fernando (23/06/2026) - Ajustes de ortografia e layout.
+# Modificações feitas por Fernando (25/06/2026)
+#   - Implementada a logica de salvar e excluir salas.
+#   - Garante que o ANDAR e a CAPACIDADE sejam números inteiros.
+#   - Realiza a INSERÇÃO no banco de dados e ATUALIZA a tabela na tela.
+#   - Limpa automaticamente os campos do formulario apos salvar.
 # ============================================================
 
 import tkinter as tk
@@ -32,24 +37,52 @@ def montar_cadastrar_sala(container, funcao_voltar):
     ent_observacao = ui.campo(interno, "OBSERVAÇÕES", largura=28)
 
     def salvar_sala():
-        nome = ent_nome.get()
-        numero = ent_numero.get()
-        andar = ent_andar.get()
-        capacidade = ent_capacidade.get()
-        observacao = ent_observacao.get()
-        if nome == "" or numero == "" or andar == "" or capacidade == "" or observacao == "":
-            messagebox.showwarning("Atenção", "Preencha os campos da sala.")
+        nome = ent_nome.get().strip()
+        numero = ent_numero.get().strip()
+        andar_texto = ent_andar.get().strip()
+        capacidade_texto = ent_capacidade.get().strip()
+        observacao = ent_observacao.get().strip()
+        
+        # 1. Validação de campos vazios
+        if nome == "" or numero == "" or andar_texto == "" or capacidade_texto == "":
+            messagebox.showwarning("Atenção", "Preencha todos os campos obrigatórios da sala.")
             return
         
-        if not capacidade.isdigit():
-            messagebox.showwarning("Atenção", "Este campo deve ser um número inteiro!")
+        # 2. Regra: Andar e Capacidade devem ser inteiros
+        if not andar_texto.isdigit() or not capacidade_texto.isdigit():
+            messagebox.showwarning("Atenção", "Os campos 'ANDAR' e 'CAPACIDADE' devem ser números inteiros!")
             return
-        capacidade = int(capacidade)
+        
+        andar = int(andar_texto)
+        capacidade = int(capacidade_texto)
 
-        if bd.cadastrar_sala(nome, numero, andar, capacidade, observacao):
-            messagebox.showinfo("Sucesso", "Sala cadastrada!")
-        else:
-            messagebox.showerror("Erro", "Já existe uma sala registrada.")
+        # POP-UPS de aviso para limites de andar e capacidade
+        if not (1 <= andar <= 15):
+            messagebox.showwarning("Aviso de Limite", "O prédio possui apenas 15 andares.\nPor favor, digite um andar entre 1 e 15.")
+            return
+
+        if capacidade <= 0:
+            messagebox.showwarning("Atenção", "A capacidade da sala deve ser maior que 0.")
+            return
+
+        # 3. Salva no Banco de Dados
+        try:
+            bd.cadastrar_sala(nome, numero, andar, capacidade, observacao, "ativa")
+            
+            messagebox.showinfo("Sucesso", "Sala cadastrada com sucesso!")
+            
+            # Limpa os campos do formulário para o próximo cadastro
+            ent_nome.delete(0, tk.END)
+            ent_numero.delete(0, tk.END)
+            ent_andar.delete(0, tk.END)
+            ent_capacidade.delete(0, tk.END)
+            ent_observacao.delete(0, tk.END)
+            
+            # Atualiza a tabela na tela imediatamente com os dados novos
+            ui.zebrar(tabela, bd.listar_salas())
+            
+        except Exception as erro:
+            messagebox.showerror("Erro", f"Não foi possível registrar a sala:\n{erro}")
 
     def excluir_sala():
         item = tabela.selection()
