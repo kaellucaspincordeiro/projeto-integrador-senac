@@ -5,6 +5,7 @@
 # (resumo) e uma grade de cartoes clicaveis (o menu).
 # Tudo se ajusta quando a janela cresce (grid + weight).
 # Modificado por Fernando (23/06/2026) - Ajustes de ortografia e layout.
+# Modificado por Fernando (25/06/2026) - Adicionado o cartao de agendamento.
 # ============================================================
 
 import tkinter as tk
@@ -54,6 +55,7 @@ def montar_dashboard(container, navegar):
     menu.pack(fill="both", expand=True)
 
     cartoes = [
+        ("agendamento",  "Novo Agendamento",      "agendamento"), 
         ("busca",        "Buscar Salas",          "busca"),
         ("equipamento",  "Cadastrar Equipamento", "cadastro_equipamento"),
         ("sala",         "Cadastrar Sala",        "cadastro_sala"),
