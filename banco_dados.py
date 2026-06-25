@@ -304,7 +304,24 @@ def recuperar_senha(id_senha, senha_hash):
     conn.commit()
     conn.close()  
 
-
+#Melhoria feita por Fernando em 24/06/2026
+#Esta função verifica se há conflito de horários para uma reserva em uma sala específica.
+#Ela faz uma consulta ao banco de dados para contar quantas reservas ativas existem para a mesma sala e data,
+#e verifica se os horários de início e fim da nova reserva se sobrepõem com alguma das reservas existentes.
+#Se houver conflito, a função retorna True; caso contrário, retorna False.
+def checar_conflito_reserva(id_sala, data, hora_inicio, hora_fim):
+    conn = conexao()
+    cursor = conn.cursor()
+    # Verifica se há sobreposição de horários para a mesma sala e data em reservas 'ativa'
+    cursor.execute("""
+        SELECT COUNT(*) FROM reserva 
+        WHERE id_sala = ? AND data = ? AND status = 'ativa'
+        AND ((hora_inicio < ? AND hora_fim > ?) OR (hora_inicio >= ? AND hora_inicio < ?))
+    """, (id_sala, data, hora_fim, hora_inicio, hora_inicio, hora_fim))
+    
+    conflitos = cursor.fetchone()[0]
+    conn.close()
+    return conflitos > 0
 
     
 
