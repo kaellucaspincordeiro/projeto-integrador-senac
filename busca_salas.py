@@ -1,57 +1,25 @@
 # ============================================================
 # TELA DE BUSCA DE SALAS  (redesign profissional - 23/06/2026)
 # ------------------------------------------------------------
-# Card de filtros no topo + lista de resultados com etiquetas
-# coloridas (verde = disponivel, laranja = ocupada, vermelho =
-# manutencao).
-# Modificado por Fernando (23/06/2026) - Ajustes de ortografia e layout.
-# Modificações feitas por Fernando (25/06/2026)
-#   - Adicionado o aplicar_mascara para data e horario, evitando que o usuario digite algo invalido..
-#   - Adicionado a função de filtrar resultados (ainda sem logica, apenas mockup).
-#   - Modificação na def linha_sala para adicionar o botão de reservar, que leva para a tela de agendamento.
-#   - Adicionado a função carregar_todas_as_salas, que mostra a situação atual das salas no banco de dados/sistema.
+# Lista as salas REAIS do banco, agrupadas por situacao:
+#   - DISPONIVEIS
+#   - OCUPADAS / INDISPONIVEIS
+#   - EM MANUTENCAO
+#
+# Modificações feitas por Dener (25/06/2026)
+#   - Agora usa os dados REAIS do banco (antes as salas eram fixas no codigo).
+#   - FILTRO funcional: escolhe data + horario e mostra quais salas estao livres
+#     nesse periodo (usa checar_conflito_reserva). Sem horario, lista por situacao.
+#   - Botao MANUTENCAO em cada sala (e "Liberar" para tirar da manutencao).
+#   - Botao "Reservar" leva para o agendamento ja com a sala escolhida.
+#   - Data por CALENDARIO e horarios por LISTA (igual a tela de agendamento).
 # ============================================================
 
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk, messagebox
+import banco_dados as bd
 import ui
 
-def aplicar_mascara(event, entry, formato):
-    texto_raw = "".join(filter(str.isdigit, entry.get()))
-    
-    # 1. Validação de DATA (Formato AAAA-MM-DD)
-    if formato == "####-##-##" and len(texto_raw) >= 6:
-        mes = int(texto_raw[4:6])
-        if mes > 12: texto_raw = texto_raw[:4] + "12" + texto_raw[6:]
-        if mes == 0: texto_raw = texto_raw[:4] + "01" + texto_raw[6:]
-        
-        if len(texto_raw) >= 8:
-            dia = int(texto_raw[6:8])
-            # Trava básica de dia em 31
-            if dia > 31: texto_raw = texto_raw[:6] + "31"
-            if dia == 0: texto_raw = texto_raw[:6] + "01"
-
-    # 2. Validação de HORÁRIO (Formato ##:##)
-    elif formato == "##:##" and len(texto_raw) >= 2:
-        horas = int(texto_raw[:2])
-        if horas > 23: texto_raw = "23" + texto_raw[2:]
-        if len(texto_raw) >= 4:
-            minutos = int(texto_raw[2:4])
-            if minutos > 59: texto_raw = texto_raw[:2] + "59"
-
-    # Montagem final do texto com o formato
-    novo_texto = ""
-    i = 0
-    for char in formato:
-        if i >= len(texto_raw): break
-        if char == "#":
-            novo_texto += texto_raw[i]
-            i += 1
-        else:
-            novo_texto += char
-    
-    entry.delete(0, tk.END)
-    entry.insert(0, novo_texto)
 
 def montar_busca_salas(container, navegar):
     ui.limpar(container)
@@ -61,89 +29,153 @@ def montar_busca_salas(container, navegar):
     filtros = ui.card(corpo)
     filtros.pack(fill="x", pady=(0, 10))
     fi = tk.Frame(filtros, bg=ui.COR_CARD)
-    fi.pack(fill="x", padx=18, pady=16)
+    fi.pack(fill="x", padx=18, pady=(16, 4))
 
-    def campo_inline(rotulo, largura, formato=None):
-        f = tk.Frame(fi, bg=ui.COR_CARD)
-        ui.lbl(f, rotulo, fonte=ui.F_LABEL, fg=ui.COR_TEXTO_FRACO).pack(anchor="w", pady=(0, 2))
-        
-        e = ttk.Entry(f, width=largura, font=ui.F_TEXTO, justify="center")
-        e.pack(ipady=4, fill="x")
-        
-        if formato:
-            # Vincula o evento de soltar tecla à função de máscara
-            e.bind("<KeyRelease>", lambda event, entry=e, f=formato: aplicar_mascara(event, entry, f))
-        
-        return f, e
+    # DATA por calendario
+    f_data = tk.Frame(fi, bg=ui.COR_CARD)
+    f_data.pack(side="left", padx=(0, 18))
+    entrada_data = ui.campo_data(f_data, "DATA", largura=12)
 
-    # DATA (AAAA-MM-DD)
-    f1, entry_data = campo_inline("DATA DA RESERVA", 16, formato="####-##-##")
-    f1.pack(side="left", padx=(0, 18))
+    # HORARIOS por lista (podem ficar em branco = sem filtro de horario)
+    horarios = [f"{h:02d}:{m:02d}" for h in range(8, 18) for m in (0, 30)] + ["18:00"]
+    f_ini = tk.Frame(fi, bg=ui.COR_CARD)
+    f_ini.pack(side="left", padx=(0, 18))
+    entrada_inicio = ui.campo(f_ini, "HORÁRIO INÍCIO", valores=horarios[:-1], largura=8)
+    f_fim = tk.Frame(fi, bg=ui.COR_CARD)
+    f_fim.pack(side="left", padx=(0, 18))
+    entrada_fim = ui.campo(f_fim, "HORÁRIO FIM", valores=horarios[1:], largura=8)
 
-    # HORÁRIO INÍCIO
-    f2, entry_inicio = campo_inline("HORÁRIO INÍCIO", 10, formato="##:##")
-    f2.pack(side="left", padx=(0, 18))
+    # Botoes de acao do filtro
+    f_btn = tk.Frame(fi, bg=ui.COR_CARD)
+    f_btn.pack(side="left", anchor="s")
+    ui.botao(f_btn, "Filtrar", lambda: atualizar_lista(), icone_nome="busca").pack(side="left")
+    ui.botao(f_btn, "Limpar", lambda: limpar_filtro(), variante="neutro").pack(side="left", padx=(8, 0))
 
-    # HORÁRIO FIM
-    f3, entry_fim = campo_inline("HORÁRIO FIM", 10, formato="##:##")
-    f3.pack(side="left", padx=(0, 18))
+    ui.lbl(filtros, "Deixe os horários em branco para listar todas as salas pela situação atual.",
+           fonte=ui.F_PEQ, fg=ui.COR_TEXTO_FRACO).pack(anchor="w", padx=18, pady=(0, 12))
 
-    # Botão de buscar estilizado
-    btn_buscar = ui.botao(fi, "Filtrar Salas", lambda: filtrar_resultados(), 
-                           variante="primario", icone_nome="busca")
-    btn_buscar.pack(side="left", anchor="s", padx=(6, 0))
-
-    # ---- Resultados ----
+    # ---- Resultados (com rolagem) ----
     res = tk.Frame(corpo, bg=ui.COR_FUNDO)
     res.pack(fill="both", expand=True, pady=(10, 0))
+    canvas = tk.Canvas(res, bg=ui.COR_FUNDO, highlightthickness=0)
+    sb = ttk.Scrollbar(res, orient="vertical", command=canvas.yview)
+    lista = tk.Frame(canvas, bg=ui.COR_FUNDO)
+    lista.bind("<Configure>", lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
+    win = canvas.create_window((0, 0), window=lista, anchor="nw")
+    canvas.bind("<Configure>", lambda e: canvas.itemconfig(win, width=e.width))
+    canvas.configure(yscrollcommand=sb.set)
+    canvas.pack(side="left", fill="both", expand=True)
+    sb.pack(side="right", fill="y")
 
+    def _roda(e):
+        if canvas.winfo_exists():
+            canvas.yview_scroll(int(-e.delta / 120), "units")
+    canvas.bind("<Enter>", lambda e: canvas.bind_all("<MouseWheel>", _roda))
+    canvas.bind("<Leave>", lambda e: canvas.unbind_all("<MouseWheel>"))
+
+    # ------------------------------------------------------------
+    # Pecas da listagem
+    # ------------------------------------------------------------
     def titulo_grupo(texto, cor):
-        cab = tk.Frame(res, bg=ui.COR_FUNDO)
+        cab = tk.Frame(lista, bg=ui.COR_FUNDO)
         cab.pack(fill="x", pady=(14, 4), anchor="w")
         ui.lbl(cab, texto, fonte=ui.F_LABEL, fg=cor, bg=ui.COR_FUNDO).pack(side="left")
 
-    def linha_sala(texto, com_botao=False, icone_nome="disponivel", cor_icone=ui.COR_SUCESSO):
-        c = ui.card(res)
+    def linha_sala(s, grupo):
+        id_sala, nome, numero, andar, capac, obs, status = s
+        c = ui.card(lista)
         c.pack(fill="x", pady=4)
-        
         dentro = tk.Frame(c, bg=ui.COR_CARD)
         dentro.pack(fill="x", padx=16, pady=12)
-        
-        ic = ui.icone(icone_nome, tam=20, cor=cor_icone)
+
+        if grupo == "manutencao":
+            ic_nome, cor = "manutencao", ui.COR_PERIGO
+        elif grupo == "ocupadas":
+            ic_nome, cor = "historico", ui.COR_AVISO
+        else:
+            ic_nome, cor = "disponivel", ui.COR_SUCESSO
+
+        ic = ui.icone(ic_nome, 20, cor)
         li = tk.Label(dentro, image=ic, bg=ui.COR_CARD)
         li.image = ic
         li.pack(side="left", padx=(0, 10))
-        
-        if " - " in texto:
-            nome_sala, detalhes = texto.split(" - ", 1)
-            ui.lbl(dentro, nome_sala, fonte=ui.F_LABEL).pack(side="left")
-            ui.lbl(dentro, f"  -  {detalhes}", fonte=ui.F_TEXTO).pack(side="left")
+
+        texto = f"{nome} ({numero})   -   {andar}º andar - {capac} lugares"
+        ui.lbl(dentro, texto, fonte=ui.F_TEXTO).pack(side="left")
+
+        if status == "manutencao":
+            # tirar da manutencao
+            ui.botao(dentro, "Liberar", lambda: mudar_status(id_sala, "disponivel"),
+                     variante="sucesso", icone_nome="disponivel").pack(side="right", padx=(0, 4))
         else:
-            ui.lbl(dentro, texto, fonte=ui.F_TEXTO).pack(side="left")
-        
-        if com_botao:
-            ui.botao(dentro, "Reservar", lambda s=nome_sala: navegar("agendamento", sala=s), 
-            icone_nome="agendamento").pack(side="right", padx=(0, 4))
+            # colocar em manutencao
+            ui.botao(dentro, "Manutenção", lambda: mudar_status(id_sala, "manutencao"),
+                     variante="neutro", icone_nome="manutencao").pack(side="right", padx=(0, 4))
+            # so faz sentido reservar uma sala que esta livre
+            if grupo == "disponiveis":
+                ui.botao(dentro, "Reservar", lambda n=nome: navegar("agendamento", sala=n),
+                         icone_nome="agendamento").pack(side="right", padx=(0, 8))
 
-    def carregar_todas_as_salas():
-        # Limpa listagem anterior se houver
-        for widget in res.winfo_children():
-            widget.destroy()
-            
-        # Exibe imediatamente a situação atual do banco de dados/sistema
-        titulo_grupo("DISPONÍVEIS", ui.COR_SUCESSO)
-        linha_sala("Sala Alfa  - 1º andar - 8 lugares", com_botao=True, icone_nome="disponivel", cor_icone=ui.COR_SUCESSO)
-        linha_sala("Sala Delta  - 2º andar - 4 lugares", com_botao=True, icone_nome="disponivel", cor_icone=ui.COR_SUCESSO)
+    # ------------------------------------------------------------
+    # Acoes
+    # ------------------------------------------------------------
+    def mudar_status(id_sala, novo_status):
+        bd.atualizar_status_sala(id_sala, novo_status)
+        atualizar_lista()   # redesenha ja com a situacao nova
 
-        titulo_grupo("INDISPONÍVEIS / OCUPADAS", ui.COR_AVISO)
-        linha_sala("Sala Beta (502)  - 5º andar - 6 lugares [Ocupada das 14h às 17h]", icone_nome="historico", cor_icone=ui.COR_AVISO)
+    def limpar_filtro():
+        entrada_inicio.set("")
+        entrada_fim.set("")
+        atualizar_lista()
 
-        titulo_grupo("EM MANUTENÇÃO", ui.COR_PERIGO)
-        linha_sala("Sala Gama (1503) - 15º andar - 10 lugares [Em manutenção]", icone_nome="manutencao", cor_icone=ui.COR_PERIGO)
+    def atualizar_lista():
+        for w in lista.winfo_children():
+            w.destroy()
 
-    def filtrar_resultados():
-        carregar_todas_as_salas()
+        salas = bd.listar_salas()
+        if not salas:
+            ui.lbl(lista, "Nenhuma sala cadastrada ainda. Cadastre no menu 'Cadastrar Sala'.",
+                   fonte=ui.F_TEXTO, fg=ui.COR_TEXTO_FRACO, bg=ui.COR_FUNDO).pack(anchor="w", pady=20)
+            return
 
-    carregar_todas_as_salas()
+        data = entrada_data.get().strip()
+        inicio = entrada_inicio.get().strip()
+        fim = entrada_fim.get().strip()
+        usar_horario = bool(inicio and fim)
+        if usar_horario and inicio >= fim:
+            messagebox.showwarning("Atenção", "O horário de início deve ser anterior ao fim.")
+            usar_horario = False
 
- 
+        # Separa as salas em 3 grupos
+        grupos = {"disponiveis": [], "ocupadas": [], "manutencao": []}
+        for s in salas:
+            status = s[6]
+            if status == "manutencao":
+                grupos["manutencao"].append(s)
+            elif status == "indisponivel":
+                grupos["ocupadas"].append(s)
+            else:  # 'disponivel'
+                # se filtrou por horario, verifica se ha reserva no periodo
+                if usar_horario and bd.checar_conflito_reserva(s[0], data, inicio, fim):
+                    grupos["ocupadas"].append(s)
+                else:
+                    grupos["disponiveis"].append(s)
+
+        titulo_disp = (f"DISPONÍVEIS EM {data} DAS {inicio} ÀS {fim}"
+                       if usar_horario else "DISPONÍVEIS")
+        secoes = [
+            (titulo_disp,                  ui.COR_SUCESSO, "disponiveis"),
+            ("OCUPADAS / INDISPONÍVEIS",   ui.COR_AVISO,   "ocupadas"),
+            ("EM MANUTENÇÃO",              ui.COR_PERIGO,  "manutencao"),
+        ]
+        for titulo, cor, chave in secoes:
+            titulo_grupo(titulo, cor)
+            if grupos[chave]:
+                for s in grupos[chave]:
+                    linha_sala(s, chave)
+            else:
+                ui.lbl(lista, "   (nenhuma)", fonte=ui.F_PEQ, fg=ui.COR_TEXTO_FRACO,
+                       bg=ui.COR_FUNDO).pack(anchor="w")
+
+    # Primeira carga: mostra todas as salas pela situacao atual.
+    atualizar_lista()

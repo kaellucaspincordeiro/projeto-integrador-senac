@@ -6,9 +6,13 @@
 # Tudo se ajusta quando a janela cresce (grid + weight).
 # Modificado por Fernando (23/06/2026) - Ajustes de ortografia e layout.
 # Modificado por Fernando (25/06/2026) - Adicionado o cartao de agendamento.
+# Modificado por Dener (25/06/2026) - Os cartoes de numeros agora mostram dados
+#   REAIS do banco (antes eram valores fixos no codigo).
 # ============================================================
 
 import tkinter as tk
+from datetime import date
+import banco_dados as bd
 import ui
 
 
@@ -32,17 +36,31 @@ def montar_dashboard(container, navegar):
 
     # ---- Corpo ----
     corpo = tk.Frame(container, bg=ui.COR_FUNDO)
-    corpo.pack(fill="both", expand=True, padx=28, pady=20)
+    corpo.pack(fill="both", expand=True, padx=28, pady=(14, 12))
 
     ui.lbl(corpo, "Visão geral", fonte=ui.F_H2, bg=ui.COR_FUNDO).pack(anchor="w")
 
-    # ---- Cartoes de numeros (resumo) ----
+    # ---- Cartoes de numeros (resumo) - DADOS REAIS do banco ----
+    salas = bd.listar_salas()          # (id, nome, numero, andar, capac, obs, status)
+    reservas = bd.db_listar_reservas() # (id, sala, cliente, data, inicio, fim, status, criado_em)
+
+    total_salas = len(salas)
+    disponiveis = sum(1 for s in salas if s[6] == "disponivel")
+    em_manutencao = sum(1 for s in salas if s[6] == "manutencao")
+    reservas_ativas = sum(1 for r in reservas if r[6] == "ativa")
+
+    # Ocupacao de hoje = salas com reserva ativa hoje / total de salas
+    hoje = date.today().strftime("%Y-%m-%d")
+    ocupadas_hoje = len({r[1] for r in reservas if r[6] == "ativa" and r[3] == hoje})
+    ocupacao = round(ocupadas_hoje / total_salas * 100) if total_salas else 0
+
     stats = tk.Frame(corpo, bg=ui.COR_FUNDO)
-    stats.pack(fill="x", pady=(10, 22))
+    stats.pack(fill="x", pady=(8, 14))
     indicadores = [
-        ("ocupacao",   ui.COR_PRIMARIA, "62%", "Ocupação geral"),
-        ("disponivel", ui.COR_SUCESSO,  "38%", "Salas disponíveis"),
-        ("manutencao", ui.COR_AVISO,    "1",   "Salas em manutenção"),
+        ("ocupacao",    ui.COR_PRIMARIA, f"{ocupacao}%",         "Ocupação hoje"),
+        ("disponivel",  ui.COR_SUCESSO,  str(disponiveis),       "Salas disponíveis"),
+        ("manutencao",  ui.COR_AVISO,    str(em_manutencao),     "Em manutenção"),
+        ("agendamento", ui.COR_PRIMARIA, str(reservas_ativas),   "Reservas ativas"),
     ]
     for i, (ic, cor, val, desc) in enumerate(indicadores):
         c = ui.card_estatistica(stats, ic, cor, val, desc)

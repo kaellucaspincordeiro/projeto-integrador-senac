@@ -50,6 +50,7 @@ F_TEXTO = (FONTE, 11)
 F_PEQ   = (FONTE, 9)
 F_BOTAO = (FONTE, 11, "bold")
 F_NUM   = (FONTE, 26, "bold")
+F_CARD  = (FONTE, 13, "bold")   # titulo dos cartoes do menu (compacto p/ caber em telas de notebook)
 
 
 # ============================================================
@@ -329,19 +330,147 @@ def campo(parent, rotulo, show=None, valores=None, largura=34):
     return ent
 
 
+# ------------------------------------------------------------
+# MASCARA de digitacao (auto-preenchimento de data e hora)
+# ------------------------------------------------------------
+# Vai colocando os separadores sozinho enquanto o usuario digita:
+#   formato "####-##-##"  -> DATA no formato AAAA-MM-DD
+#   formato "##:##"       -> HORA no formato HH:MM
+# Tambem evita valores impossiveis (mes>12, dia>31, hora>23, minuto>59).
+def aplicar_mascara(entry, formato):
+    texto = "".join(filter(str.isdigit, entry.get()))
+
+    if formato == "####-##-##":            # DATA
+        if len(texto) >= 6:
+            mes = int(texto[4:6])
+            if mes > 12:   texto = texto[:4] + "12" + texto[6:]
+            elif mes == 0: texto = texto[:4] + "01" + texto[6:]
+        if len(texto) >= 8:
+            dia = int(texto[6:8])
+            if dia > 31:   texto = texto[:6] + "31"
+            elif dia == 0: texto = texto[:6] + "01"
+    elif formato == "##:##":               # HORA
+        if len(texto) >= 2:
+            hora = int(texto[:2])
+            if hora > 23: texto = "23" + texto[2:]
+        if len(texto) >= 4:
+            minuto = int(texto[2:4])
+            if minuto > 59: texto = texto[:2] + "59"
+
+    # Remonta o texto encaixando os digitos no molde (inserindo "-" ou ":").
+    novo = ""
+    i = 0
+    for ch in formato:
+        if i >= len(texto):
+            break
+        if ch == "#":
+            novo += texto[i]
+            i += 1
+        else:
+            novo += ch
+
+    entry.delete(0, tk.END)
+    entry.insert(0, novo)
+
+
+def mascarar(entry, formato):
+    """Liga a mascara a um campo: ele se formata sozinho enquanto o usuario digita."""
+    entry.bind("<KeyRelease>", lambda e: aplicar_mascara(entry, formato))
+    return entry
+
+
+def campo_data(parent, rotulo, largura=34):
+    """Cria um rotulo + um SELETOR DE DATA.
+
+    Mostra um campo (so leitura) com a data e um botao de calendario. Ao clicar,
+    abre uma JANELINHA com o calendario (tkcalendar.Calendar) e um botao
+    "Selecionar". Usamos essa janelinha em vez do dropdown automatico do
+    DateEntry porque, nele, clicar nas setas de trocar o mes FECHAVA o calendario.
+
+    Ja vem com a data de HOJE e nao deixa escolher datas passadas (mindate = hoje).
+    Devolve o campo (Entry); .get() retorna a data no formato AAAA-MM-DD.
+    """
+    from datetime import date
+    from tkcalendar import Calendar
+
+    lbl(parent, rotulo, fonte=F_LABEL, fg=COR_TEXTO_FRACO,
+        bg=parent["bg"]).pack(anchor="w", pady=(10, 2))
+
+    linha = tk.Frame(parent, bg=parent["bg"])
+    linha.pack(fill="x")
+
+    valor = tk.StringVar(value=date.today().strftime("%Y-%m-%d"))
+    campo = ttk.Entry(linha, textvariable=valor, font=F_TEXTO, justify="center",
+                      state="readonly", width=largura)
+    campo.pack(side="left", fill="x", expand=True, ipady=4)
+
+    def abrir_calendario(_=None):
+        topo = tk.Toplevel(parent)
+        topo.title("Escolha a data")
+        topo.resizable(False, False)
+        topo.transient(parent.winfo_toplevel())
+        topo.configure(bg=COR_CARD)
+        # abre logo abaixo do campo
+        topo.geometry(f"+{campo.winfo_rootx()}+{campo.winfo_rooty() + campo.winfo_height() + 2}")
+
+        try:
+            ano, mes, dia = map(int, valor.get().split("-"))
+        except ValueError:
+            hoje = date.today()
+            ano, mes, dia = hoje.year, hoje.month, hoje.day
+
+        cal = Calendar(
+            topo, selectmode="day", year=ano, month=mes, day=dia,
+            mindate=date.today(), date_pattern="yyyy-mm-dd", font=F_TEXTO,
+            background=COR_PRIMARIA, foreground="white", bordercolor=COR_BORDA,
+            headersbackground=COR_PRIMARIA, headersforeground="white",
+            selectbackground=COR_PRIMARIA, selectforeground="white",
+            normalbackground=COR_CARD, normalforeground=COR_TEXTO,
+            weekendbackground=COR_CARD, weekendforeground=COR_TEXTO,
+            othermonthforeground=COR_TEXTO_FRACO,
+        )
+        cal.pack(padx=12, pady=12)
+
+        def confirmar_data():
+            valor.set(cal.get_date())
+            topo.destroy()
+
+        botao(topo, "Selecionar", confirmar_data, variante="sucesso",
+              icone_nome="disponivel").pack(padx=12, pady=(0, 12), fill="x")
+        # escolher com duplo-clique no dia tambem confirma
+        cal.bind("<Double-Button-1>", lambda e: confirmar_data())
+        # janelinha "modal": foca nela ate escolher/fechar. O grab_set so funciona
+        # depois que a janela esta visivel, por isso o wait_visibility antes.
+        topo.wait_visibility()
+        topo.grab_set()
+
+    botao(linha, "", abrir_calendario, variante="neutro",
+          icone_nome="agendamento").pack(side="left", padx=(6, 0))
+    campo.bind("<Button-1>", abrir_calendario)   # clicar no campo tambem abre
+
+    return campo
+
+
 def card_menu(parent, icone_nome, titulo, comando):
-    """Cartao clicavel do dashboard (icone grande + titulo)."""
+    """Cartao clicavel do dashboard (icone + titulo).
+
+    O conteudo e propositalmente compacto: antes a 'bolha' grande + espacamentos
+    faziam o cartao pedir ~148px de altura. Em telas de notebook (maximizado em
+    1366x768) cada cartao recebia so ~111px, e o TITULO, que fica embaixo do icone,
+    era cortado (os nomes nao apareciam). Reduzindo bolha/icone/espacos, o conteudo
+    cabe e o nome sempre aparece.
+    """
     c = tk.Frame(parent, bg=COR_CARD, highlightbackground=COR_BORDA,
                  highlightthickness=1, cursor="hand2")
-    bolha = tk.Frame(c, bg=COR_PRIM_CLARA, width=56, height=56)
-    bolha.pack(pady=(22, 10))
+    bolha = tk.Frame(c, bg=COR_PRIM_CLARA, width=44, height=44)
+    bolha.pack(pady=(12, 6))
     bolha.pack_propagate(False)
-    ic = icone(icone_nome, 28, COR_PRIMARIA)
+    ic = icone(icone_nome, 24, COR_PRIMARIA)
     li = tk.Label(bolha, image=ic, bg=COR_PRIM_CLARA)
     li.image = ic
     li.place(relx=0.5, rely=0.5, anchor="center")
-    lt = lbl(c, titulo, fonte=F_H2)
-    lt.pack(pady=(0, 22), padx=14)
+    lt = lbl(c, titulo, fonte=F_CARD)
+    lt.pack(pady=(0, 12), padx=12)
 
     def entra(_=None):
         c.config(highlightbackground=COR_PRIMARIA, highlightthickness=2)
@@ -360,8 +489,8 @@ def card_estatistica(parent, icone_nome, cor_icone, valor, descricao):
     """Cartao de numero do dashboard (icone + numero grande + texto)."""
     c = card(parent)
     linha = tk.Frame(c, bg=COR_CARD)
-    linha.pack(fill="x", padx=18, pady=18)
-    ic = icone(icone_nome, 34, cor_icone)
+    linha.pack(fill="x", padx=16, pady=12)
+    ic = icone(icone_nome, 30, cor_icone)
     li = tk.Label(linha, image=ic, bg=COR_CARD)
     li.image = ic
     li.pack(side="left", padx=(0, 14))

@@ -13,6 +13,11 @@
 #   - Adicionado a função de checar conflito de reserva no banco de dados.
 #   - Feita a lógica da função confirmar() para validar os campos e aplicar as regras de negocio.
 #   - Adicionado o botão de confirmar agendamento, que chama a função confirmar() e salva no banco de dados.
+# Modificações feitas por Dener (25/06/2026)
+#   - DATA virou um CALENDARIO (tkcalendar): o usuario clica e escolhe; ja vem
+#     com hoje e nao deixa escolher datas passadas.
+#   - HORA INICIO e HORA FIM viraram LISTAS para selecionar (08:00 as 18:00).
+#   - Bloqueio de horario que ja passou: nao deixa agendar antes do momento atual.
 # ============================================================
 
 import tkinter as tk
@@ -49,9 +54,15 @@ def montar_agendamento(container, navegar, sala_selecionada=None):
     nomes_clientes = [c[2] for c in clientes]
     caixa_cliente = ui.campo(interno, "CLIENTE", valores=nomes_clientes)
 
-    entrada_data = ui.campo(interno, "DATA (AAAA-MM-DD)")
-    entrada_inicio = ui.campo(interno, "HORA INICIO (HH:MM)")
-    entrada_fim = ui.campo(interno, "HORA FIM (HH:MM)")
+    # DATA: calendario que abre ao clicar. Ja vem com HOJE e nao deixa
+    # escolher datas passadas. (.get() devolve "AAAA-MM-DD")
+    entrada_data = ui.campo_data(interno, "DATA")
+
+    # HORA INICIO / FIM: listas para o usuario SELECIONAR (08:00 as 18:00,
+    # de 30 em 30 minutos), em vez de digitar.
+    horarios = [f"{h:02d}:{m:02d}" for h in range(8, 18) for m in (0, 30)] + ["18:00"]
+    entrada_inicio = ui.campo(interno, "HORA INÍCIO", valores=horarios[:-1])  # 08:00..17:30
+    entrada_fim = ui.campo(interno, "HORA FIM", valores=horarios[1:])         # 08:30..18:00
 
     ui.lbl(interno, "MÍNIMO 30MIN, MÁXIMO 4H, SEG A SEX DAS 08H ÀS 18H",
            fonte=ui.F_PEQ, fg=ui.COR_TEXTO_FRACO).pack(anchor="w", pady=(2, 8))
@@ -104,6 +115,12 @@ def montar_agendamento(container, navegar, sala_selecionada=None):
         # Sem data no passado
         if data_reserva.date() < data_atual.date():
             messagebox.showwarning("Regra de Validação", "Não é permitido agendar em datas passadas.")
+            return
+
+        # Sem horario que ja passou (quando a reserva e para HOJE)
+        if horario_inicio < data_atual:
+            messagebox.showwarning("Regra de Validação",
+                "Não é permitido agendar em um horário que já passou.\nEscolha um horário futuro.")
             return
 
         # Apenas de segunda a sexta
