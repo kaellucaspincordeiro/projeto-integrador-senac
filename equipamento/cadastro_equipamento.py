@@ -44,14 +44,19 @@ def montar_cadastro_equipamento(container, navegar):
         
         if bd.cadastrar_equipamento(nome, quantidade):
             messagebox.showinfo("Sucesso", "Equipamento cadastrado!")
+            # Limpa os campos e atualiza a tabela na hora (igual a tela de sala).
+            ent_nome.delete(0, tk.END)
+            ent_quantidade.delete(0, tk.END)
+            ui.zebrar(tabela, bd.listar_equipamentos())
         else:
-            messagebox.showerror("Erro", "Já existe um equipamento cadastrado.")
+            messagebox.showerror("Erro", f"Já existe um equipamento com o nome '{nome}'.")
 
     def deletar_equipamento():
-        item = tabela.selection()
-        if not item:
+        selecao = tabela.selection()
+        if not selecao:
             messagebox.showwarning("Atenção", "Selecione um equipamento na tabela.")
             return
+        item = selecao[0]
         id_equip = tabela.item(item, "values")[0]
         if messagebox.askyesno("Confirmar", "Deseja excluir este equipamento?"):
             bd.deletar_equipamento(id_equip)

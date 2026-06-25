@@ -67,7 +67,9 @@ def montar_cadastrar_sala(container, funcao_voltar):
 
         # 3. Salva no Banco de Dados
         try:
-            bd.cadastrar_sala(nome, numero, andar, capacidade, observacao, "ativa")
+            # O status precisa ser um dos valores aceitos pela tabela:
+            # 'disponivel', 'indisponivel' ou 'manutencao'. Uma sala nova nasce "disponivel".
+            bd.cadastrar_sala(nome, numero, andar, capacidade, observacao, "disponivel")
             
             messagebox.showinfo("Sucesso", "Sala cadastrada com sucesso!")
             
@@ -85,10 +87,11 @@ def montar_cadastrar_sala(container, funcao_voltar):
             messagebox.showerror("Erro", f"Não foi possível registrar a sala:\n{erro}")
 
     def excluir_sala():
-        item = tabela.selection()
-        if not item:
+        selecao = tabela.selection()
+        if not selecao:
             messagebox.showwarning("Atenção", "Selecione uma sala na tabela.")
             return
+        item = selecao[0]
         id_sala = tabela.item(item, "values")[0]
         if messagebox.askyesno("Confirmar", "Deseja excluir esta sala?"):
             bd.deletar_sala(id_sala)
