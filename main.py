@@ -12,6 +12,7 @@
 # Quando trocamos de tela, a gente limpa a caixa e desenha a nova.
 # Kael: Adicionando a tela do cadastro de equipamento 
 # Modificado por Fernando (23/06/2026) - Ajustes de ortografia e layout.
+# Modificado por Fernando (25/06/2026) - Adicionado o KWARGS para passar a sala selecionada na tela de busca para a tela de agendamento, sem precisar de diversas variaveis.
 # ============================================================
 
 import tkinter as tk
@@ -57,7 +58,7 @@ container.pack(fill="both", expand=True)
 #   navegar("dashboard")  ->  abre o dashboard
 #   navegar("login")      ->  abre o login
 # E por ai vai. O nome dentro das aspas decide qual tela abrir.
-def navegar(nome_tela):
+def navegar(nome_tela, **kwargs):
     if nome_tela == "login":
         montar_login(container, navegar)
     elif nome_tela == "recuperar_senha":
@@ -65,7 +66,7 @@ def navegar(nome_tela):
     elif nome_tela == "dashboard":
         montar_dashboard(container, navegar)
     elif nome_tela == "cadastro_sala":
-        # A tela de sala usa "funcao_voltar" (uma funcao sem nada dentro dos parenteses).
+         # A tela de sala usa "funcao_voltar" (uma funcao sem nada dentro dos parenteses).
         # Por isso passamos um lambda que volta para o dashboard.
         montar_cadastrar_sala(container, lambda: navegar("dashboard"))
     elif nome_tela == "cadastro_cliente":
@@ -75,7 +76,8 @@ def navegar(nome_tela):
     elif nome_tela == "cadastro_equipamento":
         montar_cadastro_equipamento(container, navegar)
     elif nome_tela == "agendamento":
-        montar_agendamento(container, navegar)
+        # passamos o "sala" que veio do kwargs
+        montar_agendamento(container, navegar, sala_selecionada=kwargs.get("sala"))
     elif nome_tela == "historico":
         montar_historico(container, navegar)
     elif nome_tela == "backup":
